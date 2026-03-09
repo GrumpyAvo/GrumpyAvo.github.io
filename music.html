@@ -27,27 +27,42 @@
     .page-wrap { max-width:900px; margin:0 auto; padding:40px; }
     .page-title { font-family:'Syne',sans-serif; font-weight:800; font-size:2.2rem; letter-spacing:-0.02em; margin-bottom:8px; }
     .page-subtitle { color:var(--muted); font-size:13px; margin-bottom:36px; }
+    .section-heading { font-family:'Syne',sans-serif; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.2em; color:var(--muted); display:flex; align-items:center; gap:12px; margin:36px 0 18px; }
+    .section-heading::after { content:''; flex:1; height:1px; background:var(--border); }
 
     /* ── NOW PLAYING HERO ── */
     .now-playing-hero {
       border:1.5px solid var(--dark);
       background:var(--dark);
       box-shadow:4px 4px 0 var(--accent1);
-      padding:28px 28px;
+      padding:28px;
       margin-bottom:32px;
       display:flex;
       align-items:center;
       gap:24px;
       position:relative;
       overflow:hidden;
+      min-height:130px;
     }
     .now-playing-hero::before {
       content:'';
       position:absolute;
-      top:0; left:0; right:0; bottom:0;
+      top:0;left:0;right:0;bottom:0;
       background:repeating-linear-gradient(-45deg,transparent,transparent 12px,rgba(139,63,200,0.07) 12px,rgba(139,63,200,0.07) 13px);
       pointer-events:none;
     }
+    /* Album art from Spotify */
+    .album-art-img {
+      width:90px; height:90px;
+      border:3px solid var(--accent1);
+      flex-shrink:0;
+      object-fit:cover;
+      display:block;
+      box-shadow:0 0 20px rgba(139,63,200,0.4);
+      position:relative;
+      z-index:1;
+    }
+    /* Fallback vinyl when not playing */
     .vinyl-large {
       width:90px; height:90px;
       border-radius:50%;
@@ -57,103 +72,52 @@
       flex-shrink:0;
       animation:spin 4s linear infinite;
       box-shadow:0 0 20px rgba(139,63,200,0.4);
+      position:relative;
+      z-index:1;
     }
-    .vinyl-large::after {
-      content:'';
-      width:16px; height:16px;
-      border-radius:50%;
-      background:var(--cream);
-      border:2px solid var(--accent1);
-    }
+    .vinyl-large::after { content:''; width:16px; height:16px; border-radius:50%; background:var(--cream); border:2px solid var(--accent1); }
+    .vinyl-paused { animation-play-state:paused; }
     @keyframes spin { to{transform:rotate(360deg)} }
     .now-playing-info { flex:1; position:relative; z-index:1; }
     .np-label { font-size:10px; text-transform:uppercase; letter-spacing:0.2em; color:var(--accent3); margin-bottom:6px; }
     .np-song { font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem; color:white; line-height:1.1; margin-bottom:4px; }
+    .np-song a { color:white; text-decoration:none; }
+    .np-song a:hover { color:var(--accent3); }
     .np-artist { font-size:14px; color:var(--accent3); margin-bottom:10px; }
     .np-bar-wrap { height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
-    .np-bar { height:100%; width:38%; background:var(--accent1); border-radius:2px; animation:progress 60s linear infinite; }
-    @keyframes progress { from{width:0%} to{width:100%} }
+    .np-bar { height:100%; background:var(--accent1); border-radius:2px; transition:width 1s linear; }
     .np-time { display:flex; justify-content:space-between; font-size:10px; color:rgba(255,255,255,0.4); margin-top:4px; }
-    .spotify-badge { position:absolute; top:16px; right:20px; z-index:1; font-size:10px; color:rgba(255,255,255,0.3); font-family:'Syne',sans-serif; letter-spacing:0.1em; text-transform:uppercase; }
+    .np-status { position:absolute; top:16px; right:20px; z-index:1; font-size:10px; color:rgba(255,255,255,0.35); font-family:'Syne',sans-serif; letter-spacing:0.1em; text-transform:uppercase; }
+    .pulse { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent1); margin-right:5px; animation:pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
 
-    /* Section heading */
-    .section-heading { font-family:'Syne',sans-serif; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.2em; color:var(--muted); display:flex; align-items:center; gap:12px; margin:36px 0 18px; }
-    .section-heading::after { content:''; flex:1; height:1px; background:var(--border); }
-    .section-heading:first-of-type { margin-top:0; }
-
-    /* ── TOP ARTISTS GRID ── */
+    /* ── TOP ARTISTS ── */
     .artists-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:8px; }
-    .artist-card {
-      border:1.5px solid var(--dark);
-      background:white;
-      box-shadow:3px 3px 0 var(--dark);
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:10px;
-      text-align:center;
-      transition:transform 0.2s, box-shadow 0.2s;
-      position:relative;
-    }
+    .artist-card { border:1.5px solid var(--dark); background:white; box-shadow:3px 3px 0 var(--dark); padding:16px; display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; transition:transform 0.2s,box-shadow 0.2s; position:relative; text-decoration:none; color:inherit; }
     .artist-card:hover { transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--dark); }
-    .artist-rank {
-      position:absolute; top:8px; left:10px;
-      font-family:'Syne',sans-serif; font-weight:800; font-size:20px;
-      color:var(--border);
-      line-height:1;
-    }
+    .artist-rank { position:absolute; top:8px; left:10px; font-family:'Syne',sans-serif; font-weight:800; font-size:20px; color:var(--border); line-height:1; }
     .artist-rank.gold { color:var(--accent3); }
-    .artist-img {
-      width:72px; height:72px;
-      border-radius:50%;
-      background:var(--panel);
-      border:2px solid var(--dark);
-      display:flex; align-items:center; justify-content:center;
-      font-size:28px;
-      overflow:hidden;
-    }
+    .artist-img { width:72px; height:72px; border-radius:50%; background:var(--panel); border:2px solid var(--dark); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:28px; }
     .artist-img img { width:100%; height:100%; object-fit:cover; }
     .artist-name { font-family:'Syne',sans-serif; font-weight:700; font-size:13px; line-height:1.2; }
-    .artist-plays { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
+    .artist-genre { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
 
     /* ── TOP TRACKS ── */
     .track-list { border:1.5px solid var(--dark); background:white; box-shadow:3px 3px 0 var(--dark); }
-    .track-row {
-      display:grid;
-      grid-template-columns:32px 1fr auto;
-      align-items:center;
-      gap:12px;
-      padding:12px 16px;
-      border-bottom:1px dashed var(--border);
-      transition:background 0.15s;
-    }
+    .track-row { display:grid; grid-template-columns:32px 40px 1fr; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px dashed var(--border); transition:background 0.15s; text-decoration:none; color:inherit; }
     .track-row:last-child { border-bottom:none; }
     .track-row:hover { background:var(--panel); }
     .track-num { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; color:var(--border); text-align:center; }
     .track-num.top { color:var(--accent1); }
+    .track-thumb { width:36px; height:36px; object-fit:cover; border:1px solid var(--border); }
+    .track-thumb-placeholder { width:36px; height:36px; background:var(--panel); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:14px; }
     .track-info-name { font-weight:600; font-size:13px; }
     .track-info-artist { font-size:11px; color:var(--muted); }
-    .track-plays { font-size:10px; color:var(--muted); white-space:nowrap; }
 
-    /* ── GENRES ── */
-    .genre-cloud { display:flex; flex-wrap:wrap; gap:8px; }
-    .genre-tag {
-      background:var(--panel);
-      border:1.5px solid var(--border);
-      font-size:12px;
-      padding:5px 12px;
-      font-family:'Inconsolata',monospace;
-      color:var(--dark);
-      transition:background 0.15s;
-    }
-    .genre-tag:hover, .genre-tag.big { background:var(--accent1); color:white; border-color:var(--accent1); }
-    .genre-tag.big { font-size:15px; padding:6px 14px; }
-    .genre-tag.med { font-size:13px; }
-
-    /* Spotify connect note */
-    .spotify-note { border:1.5px dashed var(--border); padding:18px 20px; font-size:12px; color:var(--muted); line-height:1.8; margin-bottom:32px; }
-    .spotify-note strong { color:var(--dark); font-family:'Syne',sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px; }
+    /* Loading / error states */
+    .loading-state { text-align:center; padding:40px; color:var(--muted); font-size:13px; font-style:italic; }
+    .skeleton { background:linear-gradient(90deg,var(--panel) 25%,var(--border) 50%,var(--panel) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
     footer { border-top:2px solid var(--dark); background:var(--dark); color:var(--cream); padding:24px 40px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; font-size:11px; }
     footer a { color:var(--accent3); text-decoration:none; }
@@ -164,8 +128,8 @@
 <body>
 
 <div class="marquee-bar">
-  <div class="marquee-inner">
-    ★ MUSIC ★ &nbsp;&nbsp;&nbsp; ♫ what i'm listening to &nbsp;&nbsp;&nbsp; top artists · top tracks · genres &nbsp;&nbsp;&nbsp; ✦ taste is everything ✦ &nbsp;&nbsp;&nbsp; ★ MUSIC ★ &nbsp;&nbsp;&nbsp; ♫ what i'm listening to &nbsp;&nbsp;&nbsp; top artists · top tracks · genres &nbsp;&nbsp;&nbsp; ✦ taste is everything ✦ &nbsp;&nbsp;&nbsp;
+  <div class="marquee-inner" id="marquee-text">
+    ★ MUSIC ★ &nbsp;&nbsp;&nbsp; ♫ loading spotify data... &nbsp;&nbsp;&nbsp; ★ MUSIC ★ &nbsp;&nbsp;&nbsp; ♫ loading spotify data... &nbsp;&nbsp;&nbsp;
   </div>
 </div>
 
@@ -190,106 +154,30 @@
 
 <div class="page-wrap">
   <div class="page-title">♫ music</div>
-  <div class="page-subtitle">what i'm listening to. updated manually until the spotify integration is live.</div>
+  <div class="page-subtitle">live from my spotify. updates in real time.</div>
 
-  <div class="spotify-note">
-    <strong>🔌 spotify integration</strong>
-    this page will eventually pull live data from Spotify — now playing, real play counts, the works. for now the data below is filled in manually. tell Claude what you're listening to and it'll be updated here!
-  </div>
-
-  <!-- NOW PLAYING HERO -->
-  <div class="now-playing-hero">
-    <div class="spotify-badge">♫ now playing</div>
-    <div class="vinyl-large"></div>
+  <!-- NOW PLAYING -->
+  <div class="now-playing-hero" id="now-playing-hero">
+    <div class="vinyl-large vinyl-paused" id="vinyl"></div>
     <div class="now-playing-info">
-      <div class="np-label">▶ now playing</div>
-      <div class="np-song">On God</div>
-      <div class="np-artist">Kanye West</div>
-      <div class="np-bar-wrap"><div class="np-bar"></div></div>
-      <div class="np-time"><span>1:24</span><span>3:08</span></div>
+      <div class="np-label">◈ loading...</div>
+      <div class="np-song" style="color:rgba(255,255,255,0.3)">fetching spotify</div>
+      <div class="np-artist" style="color:rgba(255,255,255,0.2)">one moment</div>
+      <div class="np-bar-wrap"><div class="np-bar" id="np-bar" style="width:0%"></div></div>
+      <div class="np-time"><span id="np-progress">0:00</span><span id="np-duration">0:00</span></div>
     </div>
   </div>
 
   <!-- TOP ARTISTS -->
   <div class="section-heading">★ top artists this month</div>
-  <div class="artists-grid">
-    <div class="artist-card">
-      <span class="artist-rank gold">1</span>
-      <div class="artist-img">🎤</div>
-      <div class="artist-name">Kanye West</div>
-      <div class="artist-plays">your #1</div>
-    </div>
-    <div class="artist-card">
-      <span class="artist-rank">2</span>
-      <div class="artist-img">🎵</div>
-      <div class="artist-name">add your artist</div>
-      <div class="artist-plays">tell Claude</div>
-    </div>
-    <div class="artist-card">
-      <span class="artist-rank">3</span>
-      <div class="artist-img">🎵</div>
-      <div class="artist-name">add your artist</div>
-      <div class="artist-plays">tell Claude</div>
-    </div>
-    <div class="artist-card">
-      <span class="artist-rank">4</span>
-      <div class="artist-img">🎵</div>
-      <div class="artist-name">add your artist</div>
-      <div class="artist-plays">tell Claude</div>
-    </div>
-    <div class="artist-card">
-      <span class="artist-rank">5</span>
-      <div class="artist-img">🎵</div>
-      <div class="artist-name">add your artist</div>
-      <div class="artist-plays">tell Claude</div>
-    </div>
-    <div class="artist-card">
-      <span class="artist-rank">6</span>
-      <div class="artist-img">🎵</div>
-      <div class="artist-name">add your artist</div>
-      <div class="artist-plays">tell Claude</div>
-    </div>
+  <div class="artists-grid" id="artists-grid">
+    <div class="loading-state" style="grid-column:1/-1">loading your top artists...</div>
   </div>
 
   <!-- TOP TRACKS -->
   <div class="section-heading">★ top tracks this month</div>
-  <div class="track-list">
-    <div class="track-row">
-      <div class="track-num top">1</div>
-      <div><div class="track-info-name">On God</div><div class="track-info-artist">Kanye West</div></div>
-      <div class="track-plays">your #1</div>
-    </div>
-    <div class="track-row">
-      <div class="track-num">2</div>
-      <div><div class="track-info-name">add your track</div><div class="track-info-artist">tell Claude the song + artist</div></div>
-      <div class="track-plays">—</div>
-    </div>
-    <div class="track-row">
-      <div class="track-num">3</div>
-      <div><div class="track-info-name">add your track</div><div class="track-info-artist">tell Claude the song + artist</div></div>
-      <div class="track-plays">—</div>
-    </div>
-    <div class="track-row">
-      <div class="track-num">4</div>
-      <div><div class="track-info-name">add your track</div><div class="track-info-artist">tell Claude the song + artist</div></div>
-      <div class="track-plays">—</div>
-    </div>
-    <div class="track-row">
-      <div class="track-num">5</div>
-      <div><div class="track-info-name">add your track</div><div class="track-info-artist">tell Claude the song + artist</div></div>
-      <div class="track-plays">—</div>
-    </div>
-  </div>
-
-  <!-- GENRES -->
-  <div class="section-heading">★ genres i'm into</div>
-  <div class="genre-cloud">
-    <span class="genre-tag big">hip-hop</span>
-    <span class="genre-tag med">rap</span>
-    <span class="genre-tag">add yours</span>
-    <span class="genre-tag">tell Claude</span>
-    <span class="genre-tag med">your genres</span>
-    <span class="genre-tag">go here</span>
+  <div class="track-list" id="tracks-list">
+    <div class="loading-state">loading your top tracks...</div>
   </div>
 
 </div>
@@ -301,6 +189,136 @@
   </div>
   <div><a href="index.html">← back home</a></div>
 </footer>
+
+<script>
+  const API = 'https://spotify-backend-lyart.vercel.app';
+
+  // ── FORMAT TIME ──
+  function fmt(ms) {
+    const s = Math.floor(ms / 1000);
+    return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  }
+
+  // ── NOW PLAYING ──
+  let progressInterval;
+  let localProgress = 0;
+  let isPlaying = false;
+
+  async function fetchNowPlaying() {
+    try {
+      const res = await fetch(`${API}/api/now-playing`);
+      const data = await res.json();
+      const hero = document.getElementById('now-playing-hero');
+      const vinyl = document.getElementById('vinyl');
+      const bar = document.getElementById('np-bar');
+
+      if (!data.isPlaying) {
+        // Not playing
+        hero.innerHTML = `
+          <div class="vinyl-large vinyl-paused"></div>
+          <div class="now-playing-info" style="position:relative;z-index:1">
+            <div class="np-label">◈ not playing</div>
+            <div class="np-song" style="color:rgba(255,255,255,0.5);font-size:1.1rem">nothing on right now</div>
+            <div class="np-artist" style="color:rgba(255,255,255,0.3)">open spotify and it'll appear here</div>
+          </div>
+          <div class="np-status">● offline</div>`;
+        // Update marquee
+        document.getElementById('marquee-text').innerHTML = '★ MUSIC ★ &nbsp;&nbsp;&nbsp; ◈ not currently playing &nbsp;&nbsp;&nbsp; ✦ check back soon ✦ &nbsp;&nbsp;&nbsp; ★ MUSIC ★ &nbsp;&nbsp;&nbsp; ◈ not currently playing &nbsp;&nbsp;&nbsp; ✦ check back soon ✦ &nbsp;&nbsp;&nbsp;';
+        return;
+      }
+
+      // Currently playing!
+      isPlaying = data.isPlaying;
+      localProgress = data.progress;
+      const pct = (data.progress / data.duration) * 100;
+
+      hero.innerHTML = `
+        <img class="album-art-img" src="${data.albumArt}" alt="${data.title}" />
+        <div class="now-playing-info" style="position:relative;z-index:1">
+          <div class="np-label"><span class="pulse"></span> now playing</div>
+          <div class="np-song"><a href="${data.songUrl}" target="_blank">${data.title}</a></div>
+          <div class="np-artist">${data.artist}</div>
+          <div class="np-bar-wrap"><div class="np-bar" id="np-bar" style="width:${pct}%"></div></div>
+          <div class="np-time"><span id="np-progress">${fmt(data.progress)}</span><span id="np-duration">${fmt(data.duration)}</span></div>
+        </div>
+        <div class="np-status">● live</div>`;
+
+      // Update marquee
+      document.getElementById('marquee-text').innerHTML = `★ NOW PLAYING ★ &nbsp;&nbsp;&nbsp; ♫ ${data.title} — ${data.artist} &nbsp;&nbsp;&nbsp; ✦ live from spotify ✦ &nbsp;&nbsp;&nbsp; ★ NOW PLAYING ★ &nbsp;&nbsp;&nbsp; ♫ ${data.title} — ${data.artist} &nbsp;&nbsp;&nbsp; ✦ live from spotify ✦ &nbsp;&nbsp;&nbsp;`;
+
+      // Animate progress bar locally
+      clearInterval(progressInterval);
+      if (isPlaying) {
+        progressInterval = setInterval(() => {
+          localProgress += 1000;
+          if (localProgress > data.duration) { clearInterval(progressInterval); return; }
+          const p = (localProgress / data.duration) * 100;
+          const barEl = document.getElementById('np-bar');
+          const progEl = document.getElementById('np-progress');
+          if (barEl) barEl.style.width = p + '%';
+          if (progEl) progEl.textContent = fmt(localProgress);
+        }, 1000);
+      }
+
+    } catch(e) {
+      console.error('Now playing error:', e);
+    }
+  }
+
+  // ── TOP ARTISTS & TRACKS ──
+  async function fetchTopStats() {
+    try {
+      const res = await fetch(`${API}/api/top-stats`);
+      const data = await res.json();
+
+      // Artists
+      const grid = document.getElementById('artists-grid');
+      if (data.artists && data.artists.length > 0) {
+        grid.innerHTML = data.artists.map((a, i) => `
+          <a class="artist-card" href="${a.url}" target="_blank">
+            <span class="artist-rank ${i===0?'gold':''}">${i+1}</span>
+            <div class="artist-img">
+              ${a.image ? `<img src="${a.image}" alt="${a.name}" />` : '🎤'}
+            </div>
+            <div class="artist-name">${a.name}</div>
+            <div class="artist-genre">${a.genres.join(' · ') || 'music'}</div>
+          </a>`).join('');
+      } else {
+        grid.innerHTML = '<div class="loading-state" style="grid-column:1/-1">no data yet — listen more on spotify!</div>';
+      }
+
+      // Tracks
+      const list = document.getElementById('tracks-list');
+      if (data.tracks && data.tracks.length > 0) {
+        list.innerHTML = data.tracks.map((t, i) => `
+          <a class="track-row" href="${t.url}" target="_blank">
+            <div class="track-num ${i===0?'top':''}">${i+1}</div>
+            ${t.image
+              ? `<img class="track-thumb" src="${t.image}" alt="${t.name}" />`
+              : `<div class="track-thumb-placeholder">♫</div>`}
+            <div>
+              <div class="track-info-name">${t.name}</div>
+              <div class="track-info-artist">${t.artist}</div>
+            </div>
+          </a>`).join('');
+      } else {
+        list.innerHTML = '<div class="loading-state">no data yet — listen more on spotify!</div>';
+      }
+
+    } catch(e) {
+      console.error('Top stats error:', e);
+    }
+  }
+
+  // ── INIT ──
+  fetchNowPlaying();
+  fetchTopStats();
+
+  // Refresh now playing every 30 seconds
+  setInterval(fetchNowPlaying, 30000);
+  // Refresh top stats every 5 minutes
+  setInterval(fetchTopStats, 300000);
+</script>
 
 </body>
 </html>
