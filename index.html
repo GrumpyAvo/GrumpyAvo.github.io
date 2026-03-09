@@ -382,8 +382,11 @@
       if (title) title.textContent = 'unavailable';
     }
   }
-  fetchNowPlayingWidget();
-  setInterval(fetchNowPlayingWidget, 30000);
+  // Wake backend then fetch
+  fetch('https://spotify-backend-lyart.vercel.app/api/now-playing').catch(function(){});
+  setTimeout(fetchNowPlayingWidget, 800);
+  setTimeout(fetchNowPlayingWidget, 3000);
+  setInterval(fetchNowPlayingWidget, 10000);
 </script>
 </body>
 </html>
