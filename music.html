@@ -311,11 +311,25 @@
   }
 
   // ── INIT ──
-  fetchNowPlaying();
-  fetchTopStats();
+  // Wake the Vercel backend immediately (it sleeps after inactivity)
+  fetch(API + '/api/now-playing').catch(function(){});
 
-  // Refresh now playing every 30 seconds
-  setInterval(fetchNowPlaying, 30000);
+  // Short delay then first real fetch so backend has time to wake
+  setTimeout(function() {
+    fetchNowPlaying();
+    fetchTopStats();
+  }, 800);
+
+  // Retry if first fetch fails (backend was cold starting)
+  setTimeout(function() {
+    var hero = document.getElementById('now-playing-hero');
+    if (hero && hero.querySelector('.vinyl-large')) {
+      fetchNowPlaying();
+    }
+  }, 3000);
+
+  // Refresh now playing every 10 seconds for snappy updates
+  setInterval(fetchNowPlaying, 10000);
   // Refresh top stats every 5 minutes
   setInterval(fetchTopStats, 300000);
 </script>
