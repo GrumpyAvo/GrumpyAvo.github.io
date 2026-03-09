@@ -354,6 +354,36 @@
   if (posts.length > 0) {
     rp.innerHTML = posts.slice(-3).reverse().map((p,i)=>`<a href="${p.page}" class="recent-post"><span class="rp-num">0${i+1}</span><div><div class="rp-title">${p.title}</div><div class="rp-date">${p.date}</div></div></a>`).join('');
   }
+
+  // ── LIVE NOW PLAYING WIDGET ──
+  async function fetchNowPlayingWidget() {
+    try {
+      const res = await fetch('https://spotify-backend-lyart.vercel.app/api/now-playing');
+      const data = await res.json();
+      const title = document.getElementById('np-title');
+      const artist = document.getElementById('np-artist');
+      const status = document.getElementById('np-status');
+      const art = document.getElementById('np-art');
+      if (!title) return;
+      if (data.isPlaying) {
+        title.textContent = data.title;
+        artist.textContent = data.artist;
+        status.innerHTML = '<span style="color:var(--accent1)">▶</span> playing now';
+        if (data.albumArt) {
+          art.innerHTML = `<img src="${data.albumArt}" style="width:44px;height:44px;object-fit:cover;display:block;border:1px solid var(--border);" />`;
+        }
+      } else {
+        title.textContent = 'not playing';
+        artist.textContent = '—';
+        status.textContent = '◈ offline';
+      }
+    } catch(e) {
+      const title = document.getElementById('np-title');
+      if (title) title.textContent = 'unavailable';
+    }
+  }
+  fetchNowPlayingWidget();
+  setInterval(fetchNowPlayingWidget, 30000);
 </script>
 </body>
 </html>
