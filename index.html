@@ -266,13 +266,13 @@
     <!-- Now Playing -->
     <div class="widget">
       <div class="widget-title"><span>♫</span> <a href="music.html" style="color:inherit;text-decoration:none;">now playing ↗</a></div>
-      <div class="widget-body">
+      <div class="widget-body" id="np-widget-body">
         <div class="now-playing">
-          <div class="album-art"><span class="vinyl">◎</span></div>
+          <div class="album-art" id="np-art"><span class="vinyl">◎</span></div>
           <div class="track-info">
-            <div class="track-name">On God</div>
-            <div class="track-artist">Kanye West</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px">▶ playing now</div>
+            <div class="track-name" id="np-title">loading...</div>
+            <div class="track-artist" id="np-artist">spotify</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px" id="np-status">◈ fetching</div>
           </div>
         </div>
       </div>
