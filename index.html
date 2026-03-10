@@ -335,12 +335,17 @@
   const chosen = titles[Math.floor(Math.random() * titles.length)];
   document.getElementById('pics-rotating-title').innerHTML = `<a href="pics.html">${chosen}</a>`;
 
-  const COUNT_KEY = 'ricardo_blog_visitors';
-  const VISIT_KEY = 'ricardo_visited';
-  let count = parseInt(localStorage.getItem(COUNT_KEY) || '0');
-  if (!sessionStorage.getItem(VISIT_KEY)) { count++; localStorage.setItem(COUNT_KEY, count); sessionStorage.setItem(VISIT_KEY,'1'); }
-  document.getElementById('hit-counter-display').innerHTML = String(count).padStart(6,'0').split('').map(d=>`<span>${d}</span>`).join('');
-  document.getElementById('visitor-num').textContent = '#' + count;
+  // Live visitor counter
+  async function updateVisitorCount() {
+    try {
+      const res = await fetch('https://spotify-backend-lyart.vercel.app/api/visitors?page=home');
+      const data = await res.json();
+      const count = data.count || 0;
+      document.getElementById('hit-counter-display').innerHTML = String(count).padStart(6,'0').split('').map(function(d){ return '<span>' + d + '</span>'; }).join('');
+      document.getElementById('visitor-num').textContent = '#' + count;
+    } catch(e) {}
+  }
+  updateVisitorCount();
 
   const entries = JSON.parse(localStorage.getItem('ricardo_guestbook') || '[]');
   const preview = document.getElementById('gb-preview');
