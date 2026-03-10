@@ -140,10 +140,7 @@
 </footer>
 
 <script>
-  const BIN_ID = '69b01341ff3f7076473f05c9';
-  const API_KEY = ['$2a','$10','$MTjdVYBjr4/O6KGhdbkueeEHIRWN83CYre/KyXrIJ4huSwxWMREuG'].join('');
-  const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
-
+  const API = 'https://spotify-backend-lyart.vercel.app';
   let allEntries = [];
 
   function formatDate(iso) {
@@ -157,26 +154,13 @@
 
   async function loadEntries() {
     try {
-      const res = await fetch(BIN_URL + '/latest', {
-        headers: { 'X-Master-Key': API_KEY }
-      });
+      const res = await fetch(API + '/api/guestbook');
       const data = await res.json();
-      allEntries = data.record.entries || [];
+      allEntries = data.entries || [];
       renderEntries(document.getElementById('gb-search').value);
     } catch(e) {
-      document.getElementById('entries-list').innerHTML = '<div class="empty-state">could not load entries \u2014 try refreshing.</div>';
+      document.getElementById('entries-list').innerHTML = '<div class="empty-state">could not load entries - try refreshing.</div>';
     }
-  }
-
-  async function saveEntries(entries) {
-    await fetch(BIN_URL, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': API_KEY
-      },
-      body: JSON.stringify({ entries })
-    });
   }
 
   function renderEntries(filter) {
@@ -186,7 +170,7 @@
 
     if (filter && filter.trim() !== '') {
       const q = filter.trim().toLowerCase();
-      list = list.filter(e => e.name.toLowerCase().includes(q));
+      list = list.filter(function(e) { return e.name.toLowerCase().includes(q); });
       label.style.display = 'block';
       label.textContent = list.length > 0
         ? 'showing ' + list.length + ' result' + (list.length !== 1 ? 's' : '') + ' for "' + filter.trim() + '"'
@@ -196,7 +180,7 @@
     }
 
     if (allEntries.length === 0) {
-      container.innerHTML = '<div class="empty-state">no entries yet — be the first to sign! 🌟</div>';
+      container.innerHTML = '<div class="empty-state">no entries yet - be the first to sign! 🌟</div>';
       return;
     }
     if (list.length === 0) {
@@ -215,7 +199,6 @@
     }).join('');
   }
 
-  // Search with Ballas easter egg
   let searchTimeout;
   document.getElementById('gb-search').addEventListener('input', function() {
     clearTimeout(searchTimeout);
@@ -240,21 +223,22 @@
     btn.textContent = 'signing...';
     btn.disabled = true;
 
-    const newEntry = { name, location, message, date: new Date().toISOString() };
-    allEntries.push(newEntry);
-
     try {
-      await saveEntries(allEntries);
+      const res = await fetch(API + '/api/guestbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, location: location, message: message })
+      });
+      if (!res.ok) throw new Error('failed');
       document.getElementById('gb-name').value = '';
       document.getElementById('gb-location').value = '';
       document.getElementById('gb-message').value = '';
       const msg = document.getElementById('success-msg');
       msg.style.display = 'block';
       setTimeout(function() { msg.style.display = 'none'; }, 4000);
-      renderEntries('');
+      await loadEntries();
     } catch(e) {
-      alert('something went wrong saving your entry — try again!');
-      allEntries.pop();
+      alert('something went wrong saving your entry - try again!');
     }
 
     btn.textContent = 'sign guestbook →';
