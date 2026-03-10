@@ -140,91 +140,128 @@
 </footer>
 
 <script>
-  const GB_KEY = 'ricardo_guestbook';
+  const BIN_ID = '69b01341ff3f7076473f05c9';
+  const API_KEY = '$2a$10$MTjdVYBjr4/O6KGhdbkueeEHIRWN83CYre/KyXrIJ4huSwxWMREuG';
+  const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
 
-  function loadEntries() { return JSON.parse(localStorage.getItem(GB_KEY) || '[]'); }
-  function saveEntries(entries) { localStorage.setItem(GB_KEY, JSON.stringify(entries)); }
-  function formatDate(iso) { const d=new Date(iso); return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+  let allEntries = [];
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+  }
 
   function escapeHtml(str) {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  async function loadEntries() {
+    try {
+      const res = await fetch(BIN_URL + '/latest', {
+        headers: { 'X-Master-Key': API_KEY }
+      });
+      const data = await res.json();
+      allEntries = data.record.entries || [];
+      renderEntries(document.getElementById('gb-search').value);
+    } catch(e) {
+      document.getElementById('entries-list').innerHTML = '<div class="empty-state">couldn't load entries — try refreshing.</div>';
+    }
+  }
+
+  async function saveEntries(entries) {
+    await fetch(BIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': API_KEY
+      },
+      body: JSON.stringify({ entries })
+    });
+  }
+
   function renderEntries(filter) {
-    const entries = loadEntries();
     const container = document.getElementById('entries-list');
     const label = document.getElementById('search-results-label');
-
-    let list = [...entries].reverse();
+    let list = [...allEntries].reverse();
 
     if (filter && filter.trim() !== '') {
       const q = filter.trim().toLowerCase();
       list = list.filter(e => e.name.toLowerCase().includes(q));
       label.style.display = 'block';
       label.textContent = list.length > 0
-        ? `showing ${list.length} result${list.length!==1?'s':''} for "${filter.trim()}"`
+        ? 'showing ' + list.length + ' result' + (list.length !== 1 ? 's' : '') + ' for "' + filter.trim() + '"'
         : '';
     } else {
       label.style.display = 'none';
     }
 
-    if (entries.length === 0) {
+    if (allEntries.length === 0) {
       container.innerHTML = '<div class="empty-state">no entries yet — be the first to sign! 🌟</div>';
       return;
     }
-
     if (list.length === 0) {
       container.innerHTML = '<div class="no-results">no entries found for that name.</div>';
       return;
     }
 
-    container.innerHTML = list.map(e => `
-      <div class="gb-entry-card">
-        <div class="gb-entry-header">
-          <span class="gb-entry-name">${escapeHtml(e.name)}${e.location?' · <span style="font-weight:400;color:var(--muted);font-size:12px">'+escapeHtml(e.location)+'</span>':''}</span>
-          <span class="gb-entry-date">${formatDate(e.date)}</span>
-        </div>
-        <div class="gb-entry-message">${escapeHtml(e.message)}</div>
-      </div>
-    `).join('');
+    container.innerHTML = list.map(function(e) {
+      return '<div class="gb-entry-card">' +
+        '<div class="gb-entry-header">' +
+          '<span class="gb-entry-name">' + escapeHtml(e.name) + (e.location ? ' · <span style="font-weight:400;color:var(--muted);font-size:12px">' + escapeHtml(e.location) + '</span>' : '') + '</span>' +
+          '<span class="gb-entry-date">' + formatDate(e.date) + '</span>' +
+        '</div>' +
+        '<div class="gb-entry-message">' + escapeHtml(e.message) + '</div>' +
+      '</div>';
+    }).join('');
   }
 
-  // Search input handler — with Ballas easter egg
+  // Search with Ballas easter egg
   let searchTimeout;
   document.getElementById('gb-search').addEventListener('input', function() {
     clearTimeout(searchTimeout);
     const val = this.value.trim();
-
-    // 🔮 SECRET EASTER EGG
     if (val.toLowerCase() === 'ballas') {
       this.value = '';
       document.body.style.transition = 'opacity 0.5s';
       document.body.style.opacity = '0';
-      setTimeout(() => { window.location.href = 'ballas.html'; }, 500);
+      setTimeout(function() { window.location.href = 'ballas.html'; }, 500);
       return;
     }
-
-    searchTimeout = setTimeout(() => renderEntries(val), 200);
+    searchTimeout = setTimeout(function() { renderEntries(val); }, 200);
   });
 
-  function submitEntry() {
+  async function submitEntry() {
     const name = document.getElementById('gb-name').value.trim();
     const location = document.getElementById('gb-location').value.trim();
     const message = document.getElementById('gb-message').value.trim();
     if (!name || !message) { alert('please fill in your name and a message!'); return; }
-    const entries = loadEntries();
-    entries.push({ name, location, message, date: new Date().toISOString() });
-    saveEntries(entries);
-    document.getElementById('gb-name').value = '';
-    document.getElementById('gb-location').value = '';
-    document.getElementById('gb-message').value = '';
-    const msg = document.getElementById('success-msg');
-    msg.style.display = 'block';
-    setTimeout(() => msg.style.display = 'none', 4000);
-    renderEntries(document.getElementById('gb-search').value);
+
+    const btn = document.querySelector('.submit-btn');
+    btn.textContent = 'signing...';
+    btn.disabled = true;
+
+    const newEntry = { name, location, message, date: new Date().toISOString() };
+    allEntries.push(newEntry);
+
+    try {
+      await saveEntries(allEntries);
+      document.getElementById('gb-name').value = '';
+      document.getElementById('gb-location').value = '';
+      document.getElementById('gb-message').value = '';
+      const msg = document.getElementById('success-msg');
+      msg.style.display = 'block';
+      setTimeout(function() { msg.style.display = 'none'; }, 4000);
+      renderEntries('');
+    } catch(e) {
+      alert('something went wrong saving your entry — try again!');
+      allEntries.pop();
+    }
+
+    btn.textContent = 'sign guestbook →';
+    btn.disabled = false;
   }
 
-  renderEntries();
+  loadEntries();
 </script>
 </body>
 </html>
