@@ -152,15 +152,15 @@
   </div>
 
 <script>
-  // Secret visitor counter — separate from main counter
-  const KEY = 'ricardo_secret_visitors';
-  let n = parseInt(localStorage.getItem(KEY) || '0');
-  if (!sessionStorage.getItem('secret_visited')) {
-    n++;
-    localStorage.setItem(KEY, n);
-    sessionStorage.setItem('secret_visited','1');
+  // Secret visitor counter — live from Upstash
+  async function updateSecretCount() {
+    try {
+      const res = await fetch('https://spotify-backend-lyart.vercel.app/api/visitors?page=ballas');
+      const data = await res.json();
+      document.getElementById('secret-count').textContent = data.count || '?';
+    } catch(e) {}
   }
-  document.getElementById('secret-count').textContent = n;
+  updateSecretCount();
 </script>
 </body>
 </html>
