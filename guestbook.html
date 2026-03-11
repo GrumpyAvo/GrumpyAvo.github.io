@@ -38,7 +38,7 @@
     @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
     header { display:grid; grid-template-columns:1fr auto; align-items:end; padding:36px 40px 20px; border-bottom:2px solid var(--dark); gap:20px; position:relative; }
     header::before { content:''; position:absolute; top:0;left:0;right:0;bottom:0; background:repeating-linear-gradient(-45deg,transparent,transparent 8px,rgba(80,0,120,0.02) 8px,rgba(80,0,120,0.02) 9px); pointer-events:none; }
-    .site-title { font-family:'SupremeDonuts',serif; font-weight:800; font-size:clamp(2.4rem,6vw,4.2rem); line-height:0.95; letter-spacing:-0.03em; }
+    .site-title { font-family:'FluxDemo',serif; font-weight:800; font-size:clamp(2.4rem,6vw,4.2rem); line-height:0.95; letter-spacing:-0.03em; }
     .site-title span.accent { color:var(--accent1); }
     .site-title span.small { font-size:0.35em; font-weight:400; font-family:'Inconsolata',monospace; display:block; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase; margin-bottom:4px; }
     .site-title a { text-decoration:none; color:var(--accent1); }
@@ -72,7 +72,7 @@
     .gb-entry-card { border:1.5px solid var(--dark); background:white; box-shadow:2px 2px 0 var(--dark); padding:18px 20px; margin-bottom:16px; position:relative; transition:transform 0.2s,box-shadow 0.2s; }
     .gb-entry-card:hover { transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--dark); }
     .gb-entry-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
-    .gb-entry-name { font-family:'Blowpis','Syne',sans-serif; font-weight:700; color:var(--accent2); font-size:15px; }
+    .gb-entry-name { font-family:'Inconsolata',monospace; font-weight:700; color:var(--accent2); font-size:15px; }
     .gb-entry-date { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
     .gb-entry-message { font-size:14px; color:#4a3d60; font-style:italic; line-height:1.65; }
     .gb-entry-message::before { content:'"'; color:var(--accent3); font-size:20px; font-family:'Playfair Display',serif; }
