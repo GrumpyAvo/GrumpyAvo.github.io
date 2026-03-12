@@ -281,7 +281,14 @@
       this.value = '';
       document.body.style.transition = 'opacity 0.5s';
       document.body.style.opacity = '0';
-      setTimeout(function() { window.location.href = 'ballas.html'; }, 500);
+      setTimeout(function() { window.location.href = 'ballas.html?from=guestbook'; }, 500);
+      return;
+    }
+    if (val.toLowerCase() === 'borat') {
+      this.value = '';
+      document.body.style.transition = 'opacity 0.5s';
+      document.body.style.opacity = '0';
+      setTimeout(function() { window.location.href = 'borat.html?from=guestbook'; }, 500);
       return;
     }
     searchTimeout = setTimeout(function() { renderEntries(val); }, 200);
