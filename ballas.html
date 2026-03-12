@@ -143,7 +143,7 @@
       <p style="color:var(--accent3);font-style:italic">— only the curious deserve to see this —</p>
     </div>
 
-    <a href="index.html" class="back-btn">← go back before someone notices</a>
+    <a href="guestbook.html" class="back-btn" id="back-btn">← go back before someone notices</a>
 
     <div class="visitor-note">
       secret visitor #<span class="visitor-count" id="secret-count">?</span> &nbsp;·&nbsp; don't tell anyone
@@ -152,6 +152,10 @@
   </div>
 
 <script>
+  // Set back button to return to where we came from
+  const from = new URLSearchParams(window.location.search).get('from');
+  if (from) document.getElementById('back-btn').href = from + '.html';
+
   // Secret visitor counter — live from Upstash
   async function updateSecretCount() {
     try {
