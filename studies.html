@@ -51,8 +51,11 @@
     .page-subtitle { color:var(--muted); font-size:13px; margin-bottom:36px; }
     .paper-card { border:1.5px solid var(--dark); background:white; box-shadow:3px 3px 0 var(--dark); padding:28px 32px; margin-bottom:28px; transition:transform 0.2s,box-shadow 0.2s; }
     .paper-card:hover { transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--dark); }
-    .paper-tag { display:inline-block; background:var(--accent1); color:white; font-family:'Blowpis','Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; padding:3px 10px; margin-bottom:14px; }
+    .paper-tag { display:inline-block; background:var(--accent1); color:white; font-family:'Inconsolata',monospace; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; padding:3px 10px; margin-bottom:14px; }
     .paper-tag.blue { background:var(--accent2); }
+    .paper-tag.green { background:#3a9e6e; }
+    .paper-tag.red { background:#c04f4f; }
+    .paper-tag.grey { background:#6a6a7a; }
     .paper-title { font-family:'SupremeDonuts',serif; font-weight:800; font-size:1.3rem; line-height:1.2; margin-bottom:8px; }
     .paper-authors { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:16px; }
     .paper-summary { font-size:13px; line-height:1.7; color:var(--dark); border-top:1px dashed var(--border); padding-top:14px; }
@@ -119,7 +122,7 @@
 <body>
 <div class="marquee-bar">
   <div class="marquee-inner">
-    ★ STUDIES &amp; RESEARCH ★ &nbsp;&nbsp;&nbsp; this page is still under construction &nbsp;&nbsp;&nbsp; ✦ check back soon ✦ &nbsp;&nbsp;&nbsp; ★ STUDIES &amp; RESEARCH ★ &nbsp;&nbsp;&nbsp; this page is still under construction &nbsp;&nbsp;&nbsp; ✦ check back soon ✦ &nbsp;&nbsp;&nbsp;
+    ★ STUDIES &amp; RESEARCH ★ &nbsp;&nbsp;&nbsp; papers worth reading ✦ things worth thinking about &nbsp;&nbsp;&nbsp; ★ STUDIES &amp; RESEARCH ★ &nbsp;&nbsp;&nbsp; papers worth reading ✦ things worth thinking about &nbsp;&nbsp;&nbsp;
   </div>
 </div>
 <header>
@@ -143,23 +146,50 @@
   <div class="page-title">📊 studies</div>
   <div class="page-subtitle">papers i've read. things worth thinking about.</div>
 
-  <div class="paper-card">
+  <a class="paper-card" href="papers/stevenson_wolfers_2009.pdf" target="_blank" style="display:block;text-decoration:none;color:inherit;">
     <span class="paper-tag">economics · gender</span>
     <div class="paper-title">The Paradox of Declining Female Happiness</div>
     <div class="paper-authors">Betsey Stevenson &amp; Justin Wolfers · 2008</div>
     <div class="paper-summary">
       By nearly every objective measure, women's lives improved dramatically between the 1970s and 2000s — higher wages, more education, greater autonomy. Yet across multiple datasets and dozens of countries, self-reported happiness among women declined, both in absolute terms and relative to men. Women who once reported being happier than men now report being roughly as happy or even less so. The paper doesn't claim to explain why — it just documents the paradox robustly and asks the uncomfortable question: did the expansion of women's opportunities somehow cost them their wellbeing, or is something else going on entirely?
     </div>
-  </div>
+  </a>
 
-  <div class="paper-card">
+  <a class="paper-card" href="papers/sat_racial_gap_2009.pdf" target="_blank" style="display:block;text-decoration:none;color:inherit;">
     <span class="paper-tag blue">education · race</span>
     <div class="paper-title">Why Family Income Differences Don't Explain the Racial Gap in SAT Scores</div>
     <div class="paper-authors">Anonymous · Journal of Blacks in Higher Education · 2008/2009</div>
     <div class="paper-summary">
       The intuitive explanation for the black-white SAT gap is income — black families earn less, so their kids score lower. But the data shows that black students from families earning over $200,000 still score lower on average than white students from families earning between $20,000 and $40,000. The gap persists at every income level. The article points to structural reasons: wealth inequality beyond income, generational differences in educational background, school quality, stereotype threat, and systemic underestimation by teachers. Income is a predictor of SAT scores, but it is not the explanation for the racial gap.
     </div>
-  </div>
+  </a>
+
+  <a class="paper-card" href="papers/kirkegaard_2019_denmark_names.pdf" target="_blank" style="display:block;text-decoration:none;color:inherit;">
+    <span class="paper-tag">intelligence · denmark · immigration</span>
+    <div class="paper-title">First Names, Cognitive Ability and Social Status in Denmark</div>
+    <div class="paper-authors">Emil O. W. Kirkegaard · Mankind Quarterly · 2019</div>
+    <div class="paper-summary">
+      IQ test scores from the Danish military draft (Børge Prien Prøven) were linked to social status data for 265 common names in Denmark (85% male). Of the 265 names, 10 were non-western Muslim names and 255 were western, mostly Danish names. Average IQ across all names correlated with social status at r = .64. Western names averaged an IQ of 98 (range: up to 107). Non-western Muslim names averaged an IQ of 81 (range: 76–87) — the lowest-scoring group in the dataset. Non-western names scored 2.66 standard deviations below western names on the composite social status measure. Mediation analysis found that 30% of the social status gap between western and non-western names was explained by the measured IQ gap.
+    </div>
+  </a>
+
+  <a class="paper-card" href="papers/bjs_recidivism_1994.pdf" target="_blank" style="display:block;text-decoration:none;color:inherit;">
+    <span class="paper-tag red">crime · policy</span>
+    <div class="paper-title">Recidivism of Prisoners Released in 1994</div>
+    <div class="paper-authors">Patrick A. Langan &amp; David J. Levin · Bureau of Justice Statistics · 2002</div>
+    <div class="paper-summary">
+      272,111 prisoners released from 15 US states in 1994 were tracked for 3 years. The sample was 91% male, 50% white, 48% black, and 24% Hispanic. Within 3 years: 67.5% were rearrested, 46.9% were reconvicted, 25.4% were resentenced to prison, and 51.8% returned to prison with or without a new sentence. By race: black former prisoners were rearrested at a rate of 73%, white former prisoners at 63%. Non-Hispanics were rearrested at 71%, Hispanics at 65%. Men were rearrested at 68%, women at 58%. By offense type, the highest rearrest rates were for motor vehicle theft (78.8%), stolen property (77.4%), larceny (74.6%), and burglary (74.0%). The lowest rearrest rates were for homicide (40.7%), sexual assault (41%), rape (46%), and DUI (51.5%).
+    </div>
+  </a>
+
+  <a class="paper-card" href="papers/ciotti_1998_kansas_city.pdf" target="_blank" style="display:block;text-decoration:none;color:inherit;">
+    <span class="paper-tag green">education · policy · race</span>
+    <div class="paper-title">Money and School Performance: Lessons from the Kansas City Desegregation Experiment</div>
+    <div class="paper-authors">Paul Ciotti · Cato Institute · 1998</div>
+    <div class="paper-summary">
+      In 1985, a federal judge took partial control of the Kansas City, Missouri School District (KCMSD) and ordered state and local taxpayers to fund a cost-is-no-object desegregation plan. Over 12 years, approximately $2 billion was spent. At its peak, the district spent $11,700 per pupil — more than any other of the 280 largest US school districts on a cost-of-living adjusted basis. The money funded 15 new schools, higher teacher salaries, an Olympic-sized swimming pool, television and animation studios, a robotics lab, a 25-acre wildlife sanctuary, a zoo, a model United Nations, and field trips abroad. The student-to-teacher ratio fell to 12–13 to 1, the lowest of any major US district. At the end of the program: achievement test scores did not rise, the black-white achievement gap did not narrow, and integration decreased — the percentage of black students in the district continued to increase. At peak, the plan attracted 1,500 white suburban students; by 1997 that number had fallen to 387.
+    </div>
+  </a>
 
 </div>
 <footer>
