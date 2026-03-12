@@ -73,16 +73,16 @@
 
     /* ── MAGAZINE GRID ── */
     .books-grid {
-      columns: 4 180px;
-      column-gap: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 28px 18px;
       margin-bottom: 40px;
-      padding-top: 24px;
+      padding-top: 24px; /* space so top badges don't get clipped */
+      align-items: start;
     }
 
     /* ── BOOK CARD ── */
     .book-card {
-      break-inside: avoid;
-      margin-bottom: 16px;
       position: relative;
       border: 2px solid var(--dark);
       border-radius: 18px;
@@ -95,9 +95,12 @@
     }
     .book-card:hover { transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--dark); }
 
-    /* Size variations — different heights per column flow */
+    /* Size variations for magazine feel */
+    .book-card.size-tall   { grid-row: span 2; }
+    .book-card.size-wide   { grid-column: span 2; }
+
     .book-card.size-tall   .cover-img { aspect-ratio: 2/3; }
-    .book-card.size-wide   .cover-img { aspect-ratio: 4/3; }
+    .book-card.size-wide   .cover-img { aspect-ratio: 3/2; }
     .book-card.size-square .cover-img { aspect-ratio: 1/1; }
     .book-card.size-normal .cover-img { aspect-ratio: 3/4; }
 
@@ -264,7 +267,9 @@
     [data-theme="dark"] footer { background:#16112a !important; }
 
     @media(max-width:700px) {
-      .books-grid { columns: 2; column-gap:12px; }
+      .books-grid { grid-template-columns: repeat(2, 1fr); gap:24px 12px; }
+      .book-card.size-wide { grid-column: span 1; }
+      .book-card.size-tall { grid-row: span 1; }
       .page-wrap { padding:20px 16px; }
       header { padding:20px 16px; }
       nav { padding:0 16px; }
