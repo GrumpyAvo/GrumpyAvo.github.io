@@ -73,20 +73,26 @@
 
     /* ── MAGAZINE GRID ── */
     .books-grid-wrap {
-      overflow: hidden;
+      /* padding-top gives badges room to poke above without clipping */
       padding-top: 24px;
+      /* right padding prevents badges on last column from being cut */
+      padding-right: 20px;
       margin-bottom: 40px;
+      /* clip-path only clips the bottom bleed, not the sides/top */
+      overflow: visible;
     }
     .books-grid {
-      columns: 4 180px;
+      columns: 4 175px;
       column-gap: 10px;
-      padding-bottom: 1px;
+      /* Adding explicit padding-bottom stops last-column bleed */
+      padding-bottom: 20px;
     }
 
     /* ── BOOK CARD ── */
     .book-card {
       break-inside: avoid;
-      margin-bottom: 10px;
+      /* top margin feeds the badge space above; right margin feeds badge on right */
+      margin: 0 16px 10px 0;
       position: relative;
       border: 2px solid var(--dark);
       border-radius: 18px;
@@ -135,14 +141,14 @@
       text-transform:uppercase; letter-spacing:0.05em;
     }
 
-    /* ── RATING BADGE ── */
+    /* ── RATING BADGE — always a circle ── */
     .rating-badge {
       position: absolute;
-      top: -14px;
-      right: -14px;
+      top: -16px;
+      right: -16px;
       z-index: 20;
-      width: 52px;
-      height: 52px;
+      width: 54px;
+      height: 54px;
       border-radius: 50%;
       border: 2.5px solid white;
       display: flex;
@@ -152,29 +158,36 @@
       font-weight: 800;
       font-size: 17px;
       color: white;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.4);
       transition: transform 0.2s;
       text-align: center;
       line-height: 1;
+      /* never grow — always stays 54x54 circle */
+      flex-shrink: 0;
+      overflow: hidden;
+      padding: 4px;
+    }
+    /* Phrase text inside the circle — small and centered */
+    .rating-badge .badge-inner {
+      font-size: 7.5px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      line-height: 1.2;
+      text-align: center;
+      display: block;
+      width: 100%;
+      word-break: break-word;
+      hyphens: auto;
+    }
+    /* Number mode — bigger font, no wrapping needed */
+    .rating-badge .badge-inner.is-num {
+      font-size: 17px;
+      letter-spacing: 0;
+      text-transform: none;
+      line-height: 1;
     }
     .book-card:hover .rating-badge { transform: scale(1.1) rotate(-5deg); }
-
-    /* Phrase mode — badge expands to pill */
-    .rating-badge.phrase-mode {
-      width: auto;
-      min-width: 52px;
-      max-width: 140px;
-      height: auto;
-      border-radius: 999px;
-      padding: 7px 11px;
-      font-size: 9.5px;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      line-height: 1.25;
-      top: -16px;
-      right: -8px;
-    }
 
     /* Rating colour scale */
     .r0  { background: #1a1228; }
@@ -283,8 +296,9 @@
     [data-theme="dark"] footer { background:#16112a !important; }
 
     @media(max-width:700px) {
-      .books-grid-wrap { padding-top: 16px; }
-      .books-grid { columns: 2; column-gap:12px; }
+      .books-grid-wrap { padding-top: 16px; padding-right: 16px; }
+      .books-grid { columns: 2; column-gap:8px; }
+      .book-card { margin-right: 14px; }
       .page-wrap { padding:20px 16px; }
       header { padding:20px 16px; }
       nav { padding:0 16px; }
@@ -411,7 +425,7 @@ const SIZE_CYCLE = ['size-tall','size-normal','size-normal','size-tall','size-sq
 // ── STATE ─────────────────────────────────────────────────────────────
 let mode = 'num';       // 'num' | 'phrase'
 let currentPage = 1;
-const PER_PAGE = 12;
+const PER_PAGE = 24;
 const totalPages = Math.ceil(BOOKS.length / PER_PAGE);
 
 // Cover cache
@@ -495,8 +509,9 @@ async function renderPage(page) {
     card.dataset.rating = book.rating;
 
     const phrase = mode === 'phrase';
-    const badgeClass = `rating-badge r${book.rating}${phrase ? ' phrase-mode' : ''}`;
+    const badgeClass = `rating-badge r${book.rating}`;
     const badgeContent = phrase ? PHRASES[book.rating] : book.rating;
+    const innerClass = phrase ? 'badge-inner' : 'badge-inner is-num';
 
     // Cover area with shimmer while loading
     const coverWrap = document.createElement('div');
@@ -506,8 +521,11 @@ async function renderPage(page) {
     // Badge
     const badge = document.createElement('div');
     badge.className = badgeClass;
-    badge.textContent = badgeContent;
     badge.dataset.num = book.rating;
+    const inner = document.createElement('span');
+    inner.className = innerClass;
+    inner.textContent = badgeContent;
+    badge.appendChild(inner);
 
     // Meta strip
     const meta = document.createElement('div');
@@ -614,12 +632,13 @@ function setMode(m) {
   // Update all visible badges without re-fetching
   document.querySelectorAll('.rating-badge').forEach(badge => {
     const r = parseInt(badge.dataset.num);
+    const inner = badge.querySelector('.badge-inner') || badge;
     if (m === 'phrase') {
-      badge.classList.add('phrase-mode');
-      badge.textContent = PHRASES[r];
+      inner.className = 'badge-inner';
+      inner.textContent = PHRASES[r];
     } else {
-      badge.classList.remove('phrase-mode');
-      badge.textContent = r;
+      inner.className = 'badge-inner is-num';
+      inner.textContent = r;
     }
   });
 }
