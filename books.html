@@ -72,17 +72,21 @@
     .toggle-btn.active { background:var(--accent1); color:white; }
 
     /* ── MAGAZINE GRID ── */
-    .books-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 28px 18px;
+    .books-grid-wrap {
+      overflow: hidden;
+      padding-top: 24px;
       margin-bottom: 40px;
-      padding-top: 24px; /* space so top badges don't get clipped */
-      align-items: start;
+    }
+    .books-grid {
+      columns: 4 180px;
+      column-gap: 16px;
+      padding-bottom: 1px;
     }
 
     /* ── BOOK CARD ── */
     .book-card {
+      break-inside: avoid;
+      margin-bottom: 16px;
       position: relative;
       border: 2px solid var(--dark);
       border-radius: 18px;
@@ -95,12 +99,9 @@
     }
     .book-card:hover { transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--dark); }
 
-    /* Size variations for magazine feel */
-    .book-card.size-tall   { grid-row: span 2; }
-    .book-card.size-wide   { grid-column: span 2; }
-
+    /* Size variations — different heights per column flow */
     .book-card.size-tall   .cover-img { aspect-ratio: 2/3; }
-    .book-card.size-wide   .cover-img { aspect-ratio: 3/2; }
+    .book-card.size-wide   .cover-img { aspect-ratio: 4/3; }
     .book-card.size-square .cover-img { aspect-ratio: 1/1; }
     .book-card.size-normal .cover-img { aspect-ratio: 3/4; }
 
@@ -151,7 +152,7 @@
       font-weight: 800;
       font-size: 17px;
       color: white;
-      box-shadow: 2px 2px 0 var(--dark);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.35);
       transition: transform 0.2s;
       text-align: center;
       line-height: 1;
@@ -233,6 +234,21 @@
     .page-btn.arrow { font-size:16px; }
     .page-info { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; padding:0 8px; }
 
+    /* ── LOADING SHIMMER ── */
+    .cover-shimmer {
+      width: 100%;
+      height: 100%;
+      min-height: 200px;
+      border-radius: 16px 16px 0 0;
+      background: linear-gradient(90deg, var(--panel) 25%, var(--border) 50%, var(--panel) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
     /* ── LOADING SPINNER ── */
     .loading-covers {
       text-align:center; padding:40px; color:var(--muted);
@@ -267,9 +283,8 @@
     [data-theme="dark"] footer { background:#16112a !important; }
 
     @media(max-width:700px) {
-      .books-grid { grid-template-columns: repeat(2, 1fr); gap:24px 12px; }
-      .book-card.size-wide { grid-column: span 1; }
-      .book-card.size-tall { grid-row: span 1; }
+      .books-grid-wrap { padding-top: 16px; }
+      .books-grid { columns: 2; column-gap:12px; }
       .page-wrap { padding:20px 16px; }
       header { padding:20px 16px; }
       nav { padding:0 16px; }
@@ -403,10 +418,39 @@ const totalPages = Math.ceil(BOOKS.length / PER_PAGE);
 const coverCache = {};
 
 // ── OPEN LIBRARY COVER ────────────────────────────────────────────────
-function coverUrl(book) {
-  if (book.isbn) return `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg?default=false`;
-  if (book.olid) return `https://covers.openlibrary.org/b/olid/${book.olid}-L.jpg?default=false`;
-  return null;
+// Strategy: ISBN cover → search API for best match cover ID → give up → placeholder
+async function fetchCoverUrl(book) {
+  // 1. Try ISBN cover directly (no default=false so OL returns their generic if missing,
+  //    but we detect that by checking content-type / size via the search API instead)
+  if (book.isbn) {
+    const direct = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
+    // Check if it's a real cover (OL returns a 1x1 gif for missing covers without default=false)
+    // We'll try it and let the img onerror handle it, BUT also pre-fetch via search API
+    // to get a better cover ID if available.
+    const searchCover = await searchOpenLibraryCover(book);
+    if (searchCover) return searchCover;
+    return direct; // fallback to direct ISBN attempt anyway
+  }
+  if (book.olid) return `https://covers.openlibrary.org/b/olid/${book.olid}-L.jpg`;
+  return await searchOpenLibraryCover(book);
+}
+
+async function searchOpenLibraryCover(book) {
+  try {
+    const query = encodeURIComponent(book.title + (book.author ? ' ' + book.author : ''));
+    const res = await fetch(`https://openlibrary.org/search.json?q=${query}&limit=5&fields=cover_i,isbn,title`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    // Find first result that has a cover
+    for (const doc of (data.docs || [])) {
+      if (doc.cover_i) {
+        return `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+      }
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
 }
 
 // ── RATING BADGE TEXT ─────────────────────────────────────────────────
@@ -415,7 +459,7 @@ function badgeText(rating) {
 }
 
 // ── BUILD GRID ────────────────────────────────────────────────────────
-function renderPage(page) {
+async function renderPage(page) {
   currentPage = page;
   const start = (page - 1) * PER_PAGE;
   const slice = BOOKS.slice(start, start + PER_PAGE);
@@ -434,24 +478,10 @@ function renderPage(page) {
     const badgeClass = `rating-badge r${book.rating}${phrase ? ' phrase-mode' : ''}`;
     const badgeContent = phrase ? PHRASES[book.rating] : book.rating;
 
-    // Cover area
+    // Cover area with shimmer while loading
     const coverWrap = document.createElement('div');
     coverWrap.className = 'cover-img';
-
-    const url = coverUrl(book);
-    if (url) {
-      const img = document.createElement('img');
-      img.alt = book.title;
-      img.loading = 'lazy';
-      // Try to load; fallback to placeholder
-      img.onerror = function() {
-        coverWrap.innerHTML = placeholderHTML(book);
-      };
-      img.src = url;
-      coverWrap.appendChild(img);
-    } else {
-      coverWrap.innerHTML = placeholderHTML(book);
-    }
+    coverWrap.innerHTML = `<div class="cover-shimmer"></div>`;
 
     // Badge
     const badge = document.createElement('div');
@@ -468,11 +498,32 @@ function renderPage(page) {
     card.appendChild(badge);
     card.appendChild(meta);
     grid.appendChild(card);
+
+    // Load cover asynchronously
+    fetchCoverUrl(book).then(url => {
+      if (!url) {
+        coverWrap.innerHTML = placeholderHTML(book);
+        return;
+      }
+      const img = document.createElement('img');
+      img.alt = book.title;
+      img.onerror = function() {
+        coverWrap.innerHTML = placeholderHTML(book);
+      };
+      img.onload = function() {
+        coverWrap.innerHTML = '';
+        coverWrap.appendChild(img);
+      };
+      img.src = url;
+    });
   });
 
+  const wrap = document.createElement('div');
+  wrap.className = 'books-grid-wrap';
+  wrap.appendChild(grid);
   const container = document.getElementById('books-container');
   container.innerHTML = '';
-  container.appendChild(grid);
+  container.appendChild(wrap);
 
   renderPagination();
   window.scrollTo({ top: 0, behavior: 'smooth' });
