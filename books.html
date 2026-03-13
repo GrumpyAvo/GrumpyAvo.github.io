@@ -79,14 +79,14 @@
     }
     .books-grid {
       columns: 4 180px;
-      column-gap: 16px;
+      column-gap: 10px;
       padding-bottom: 1px;
     }
 
     /* ── BOOK CARD ── */
     .book-card {
       break-inside: avoid;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
       position: relative;
       border: 2px solid var(--dark);
       border-radius: 18px;
@@ -393,13 +393,13 @@ const BOOKS = [
 
 const PHRASES = {
   0:  "Throw the Jew down the well",
-  1:  "Uzbekistan",
+  1:  "genuine chocolate face",
   2:  "genuine chocolate face",
-  3:  "Its not good for me",
+  3:  "Do not try shrink me gypsy",
   4:  "Do not try shrink me gypsy",
-  5:  "You will be my boyfriend?",
+  5:  "Very nice",
   6:  "Very nice",
-  7:  "Do this have a pussy magnet?",
+  7:  "I very excite",
   8:  "I very excite",
   9:  "Wa wa wee wa",
   10: "Great success"
@@ -420,37 +420,57 @@ const coverCache = {};
 // ── OPEN LIBRARY COVER ────────────────────────────────────────────────
 // Strategy: ISBN cover → search API for best match cover ID → give up → placeholder
 async function fetchCoverUrl(book) {
-  // 1. Try ISBN cover directly (no default=false so OL returns their generic if missing,
-  //    but we detect that by checking content-type / size via the search API instead)
+  // Try ISBN direct first — fast and usually works
   if (book.isbn) {
     const direct = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
-    // Check if it's a real cover (OL returns a 1x1 gif for missing covers without default=false)
-    // We'll try it and let the img onerror handle it, BUT also pre-fetch via search API
-    // to get a better cover ID if available.
-    const searchCover = await searchOpenLibraryCover(book);
-    if (searchCover) return searchCover;
-    return direct; // fallback to direct ISBN attempt anyway
+    const ok = await imageExists(direct);
+    if (ok) return direct;
   }
-  if (book.olid) return `https://covers.openlibrary.org/b/olid/${book.olid}-L.jpg`;
+  if (book.olid) {
+    const direct = `https://covers.openlibrary.org/b/olid/${book.olid}-L.jpg`;
+    const ok = await imageExists(direct);
+    if (ok) return direct;
+  }
+  // Fall back to search API
   return await searchOpenLibraryCover(book);
+}
+
+// Check if an image URL actually returns a real image (not OL's 1x1 blank gif)
+async function imageExists(url) {
+  try {
+    const res = await fetch(url, { method: 'HEAD' });
+    if (!res.ok) return false;
+    const ct = res.headers.get('content-type') || '';
+    const cl = parseInt(res.headers.get('content-length') || '0');
+    // OL returns a tiny GIF (~807 bytes) when no cover exists
+    if (ct.includes('gif') && cl < 1000) return false;
+    return true;
+  } catch(e) { return false; }
 }
 
 async function searchOpenLibraryCover(book) {
   try {
-    const query = encodeURIComponent(book.title + (book.author ? ' ' + book.author : ''));
-    const res = await fetch(`https://openlibrary.org/search.json?q=${query}&limit=5&fields=cover_i,isbn,title`);
+    // Use separate title/author params — more reliable than q=
+    let url = `https://openlibrary.org/search.json?title=${encodeURIComponent(book.title)}&limit=5&fields=cover_i`;
+    if (book.author) url += `&author=${encodeURIComponent(book.author)}`;
+    const res = await fetch(url);
     if (!res.ok) return null;
     const data = await res.json();
-    // Find first result that has a cover
     for (const doc of (data.docs || [])) {
-      if (doc.cover_i) {
-        return `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+      if (doc.cover_i) return `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+    }
+    // Retry with title only if author search found nothing
+    if (book.author) {
+      const res2 = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(book.title)}&limit=5&fields=cover_i`);
+      if (res2.ok) {
+        const data2 = await res2.json();
+        for (const doc of (data2.docs || [])) {
+          if (doc.cover_i) return `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+        }
       }
     }
     return null;
-  } catch(e) {
-    return null;
-  }
+  } catch(e) { return null; }
 }
 
 // ── RATING BADGE TEXT ─────────────────────────────────────────────────
