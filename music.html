@@ -354,7 +354,7 @@
               ${a.image ? `<img src="${a.image}" alt="${a.name}" />` : '🎤'}
             </div>
             <div class="artist-name">${a.name}</div>
-            <div class="artist-genre">${a.genres.join(' · ') || 'music'}</div>
+            <div class="artist-genre">${a.genres.join(' · ')}</div>
           </a>`).join('');
       } else {
         grid.innerHTML = '<div class="loading-state" style="grid-column:1/-1">no data yet — listen more on spotify!</div>';
