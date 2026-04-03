@@ -285,5 +285,61 @@
   if(active) applyFont(true);
 })();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+  const db = supabase.createClient('https://wzvmdpkiwwfhnisjudeo.supabase.co', 'sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op');
+  const TAB_SLUG = 'pics';
+
+  function fmtDate(s) {
+    return new Date(s).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+  }
+
+  function renderPost(p) {
+    const img = p.image_url
+      ? `<img src="${p.image_url}" alt="${p.title}" class="post-image" />`
+      : '';
+    return `
+      <article class="post" id="post-${p.id}">
+        <div class="post-tag">✍️ ${TAB_SLUG}</div>
+        ${img}
+        <div class="post-body">
+          <div class="post-meta"><span>${fmtDate(p.created_at)}</span></div>
+          <h2 class="post-title">${p.title}</h2>
+          <div class="post-excerpt" style="white-space:pre-wrap;font-size:14px;line-height:1.7;color:#4a3d60;margin-bottom:16px">${p.content}</div>
+        </div>
+      </article>`;
+  }
+
+  async function loadPosts() {
+    const { data: tabs } = await db.from('tabs').select('id').eq('slug', TAB_SLUG).single();
+    if (!tabs) return;
+
+    const { data } = await db
+      .from('posts')
+      .select('*')
+      .eq('tab_id', tabs.id)
+      .eq('published', true)
+      .order('created_at', { ascending: false });
+
+    if (!data || !data.length) return;
+
+    // Find insertion point
+    const wrap = document.querySelector('.page-wrap') || document.querySelector('main');
+    if (!wrap) return;
+
+    // Remove static placeholder posts
+    wrap.querySelectorAll('article.post').forEach(a => a.remove());
+
+    const wrapper = document.createElement('div');
+    wrapper.id = 'cms-posts';
+    data.forEach(p => wrapper.innerHTML += renderPost(p));
+    wrap.appendChild(wrapper);
+  }
+
+  loadPosts();
+})();
+</script>
 </body>
 </html>
