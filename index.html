@@ -515,5 +515,81 @@
   if(active) applyFont(true);
 })();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+  const db = supabase.createClient('https://wzvmdpkiwwfhnisjudeo.supabase.co', 'sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op');
+
+  function fmtDate(s) {
+    return new Date(s).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+  }
+
+  function renderPost(p) {
+    const tabName = p.tab ? p.tab.name : '';
+    const tabSlug = p.tab ? p.tab.slug : '';
+    const img = p.image_url
+      ? `<img src="${p.image_url}" alt="${p.title}" class="post-image" style="margin-top:12px" />`
+      : '';
+    const excerpt = p.content.length > 220 ? p.content.substring(0,220) + '…' : p.content;
+    return `
+      <article class="post" id="post-${p.id}">
+        <div class="post-tag">${tabName}</div>
+        ${img}
+        <div class="post-body">
+          <div class="post-meta">
+            <span>${fmtDate(p.created_at)}</span>
+            <span class="dot">·</span>
+            <span>${tabName}</span>
+          </div>
+          <h2 class="post-title"><a href="${tabSlug}.html#post-${p.id}">${p.title}</a></h2>
+          <p class="post-excerpt">${excerpt}</p>
+          <a href="${tabSlug}.html#post-${p.id}" class="read-more">keep reading →</a>
+        </div>
+      </article>`;
+  }
+
+  async function loadPosts() {
+    const { data } = await db
+      .from('posts')
+      .select('*, tab:tabs(name,slug)')
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (!data || !data.length) return;
+
+    // Find the feed header inside main
+    const feedHeader = document.querySelector('.feed-header');
+    if (!feedHeader) return;
+
+    // Remove existing static posts
+    const main = feedHeader.closest('main') || feedHeader.parentElement;
+    main.querySelectorAll('article.post').forEach(a => a.remove());
+    main.querySelectorAll('.divider').forEach(d => d.remove());
+
+    // Insert CMS posts after feed header
+    const wrapper = document.createElement('div');
+    wrapper.id = 'cms-posts';
+    data.forEach(p => wrapper.innerHTML += renderPost(p));
+    feedHeader.insertAdjacentElement('afterend', wrapper);
+
+    // Update sidebar recent posts if present
+    const sidebar = document.getElementById('recent-posts-sidebar');
+    if (sidebar) {
+      sidebar.innerHTML = data.slice(0,3).map((p,i) => `
+        <a href="${p.tab ? p.tab.slug : 'index'}.html#post-${p.id}" class="recent-post">
+          <span class="rp-num">0${i+1}</span>
+          <div>
+            <div class="rp-title">${p.title}</div>
+            <div class="rp-date">${fmtDate(p.created_at)}</div>
+          </div>
+        </a>`).join('');
+    }
+  }
+
+  loadPosts();
+})();
+</script>
 </body>
 </html>
