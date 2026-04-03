@@ -164,20 +164,7 @@
 <div class="page-wrap">
   <div class="page-title">✍️ life</div>
   <div class="page-subtitle">personal posts. things happening. thoughts from my actual life.</div>
-
-  <article class="post">
-    <div class="post-tag">✍️ life</div>
-    <img src="https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&q=80" alt="post image" class="post-image" />
-    <div class="post-body">
-      <div class="post-meta">
-        <span>feb 15, 2025</span>
-        <span class="dot">·</span>
-        <span>personal</span>
-      </div>
-      <h2 class="post-title"><a href="#">things i've been thinking about this month</a></h2>
-      <a href="#" class="read-more">keep reading →</a>
-    </div>
-  </article>
+  <div id="cms-posts"></div>
 </div>
 <footer>
   <div>
@@ -224,57 +211,37 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function() {
-  const db = supabase.createClient('https://wzvmdpkiwwfhnisjudeo.supabase.co', 'sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op');
-  const TAB_SLUG = 'life';
-
-  function fmtDate(s) {
-    return new Date(s).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+(function(){
+  const db = supabase.createClient('https://wzvmdpkiwwfhnisjudeo.supabase.co','sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op');
+  function fmtDate(s){return new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+  function renderPost(p){
+    const img = p.image_url ? `<img src="${p.image_url}" alt="${p.title}" class="post-image" />` : '';
+    return `<article class="post" id="post-${p.id}">
+      <div class="post-tag">✍️ life</div>
+      ${img}
+      <div class="post-body">
+        <div class="post-meta"><span>${fmtDate(p.created_at)}</span>${p.category?`<span class="dot">·</span><span>${p.category}</span>`:''}</div>
+        <h2 class="post-title">${p.title}</h2>
+        ${p.subtitle?`<div style="font-size:13px;color:var(--muted);margin-bottom:8px">${p.subtitle}</div>`:''}
+        <div class="post-excerpt" style="white-space:pre-wrap;font-size:14px;line-height:1.7;color:#4a3d60;margin-bottom:16px">${p.content||''}</div>
+      </div>
+    </article>`;
   }
-
-  function renderPost(p) {
-    const img = p.image_url
-      ? `<img src="${p.image_url}" alt="${p.title}" class="post-image" />`
-      : '';
-    return `
-      <article class="post" id="post-${p.id}">
-        <div class="post-tag">✍️ ${TAB_SLUG}</div>
-        ${img}
-        <div class="post-body">
-          <div class="post-meta"><span>${fmtDate(p.created_at)}</span></div>
-          <h2 class="post-title">${p.title}</h2>
-          <div class="post-excerpt" style="white-space:pre-wrap;font-size:14px;line-height:1.7;color:#4a3d60;margin-bottom:16px">${p.content}</div>
-        </div>
-      </article>`;
-  }
-
-  async function loadPosts() {
-    const { data: tabs } = await db.from('tabs').select('id').eq('slug', TAB_SLUG).single();
-    if (!tabs) return;
-
-    const { data } = await db
-      .from('posts')
-      .select('*')
-      .eq('tab_id', tabs.id)
-      .eq('published', true)
-      .order('created_at', { ascending: false });
-
-    if (!data || !data.length) return;
-
-    // Find insertion point
-    const wrap = document.querySelector('.page-wrap') || document.querySelector('main');
-    if (!wrap) return;
-
-    // Remove static placeholder posts
-    wrap.querySelectorAll('article.post').forEach(a => a.remove());
-
-    const wrapper = document.createElement('div');
-    wrapper.id = 'cms-posts';
+  async function loadPosts(){
+    const {data:tabs} = await db.from('tabs').select('id').eq('slug','life').single();
+    if(!tabs) return;
+    const {data} = await db.from('posts').select('*').eq('tab_id',tabs.id).eq('published',true).neq('status','hidden').order('created_at',{ascending:false});
+    const wrap = document.querySelector('.page-wrap');
+    if(!wrap) return;
+    // Remove static immediately
+    wrap.querySelectorAll('article.post').forEach(a=>a.remove());
+    const wrapper = document.getElementById('cms-posts') || document.createElement('div');
+    wrapper.id = 'cms-posts'; wrapper.innerHTML='';
+    if(!document.getElementById('cms-posts')) wrap.appendChild(wrapper);
+    if(!data||!data.length){ wrapper.innerHTML='<p style="color:var(--muted);font-style:italic;font-size:14px">No posts yet.</p>'; return; }
     data.forEach(p => wrapper.innerHTML += renderPost(p));
-    wrap.appendChild(wrapper);
   }
-
-  loadPosts();
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadPosts);}else{loadPosts();}
 })();
 </script>
 </body>
