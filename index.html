@@ -188,6 +188,9 @@
     [data-theme="dark"] .form-group textarea {
       background:#1c1530; color:#ede8f7; border-color:#3d2a5e;
     }
+  
+    #cms-posts article { opacity:0; }
+    #cms-posts.loaded article { opacity:1; transition:opacity 0.3s; }
   </style>
 <script>
   (function() {
@@ -244,68 +247,7 @@
   <main>
     <div class="feed-header"><h2>★ latest posts</h2></div>
 
-    <!-- POST 1 — Pics with tag fixed on top -->
-    <article class="post">
-      <div class="post-tag">📷 pics</div>
-      <div class="post-film-strip">
-        <div class="film-frame">
-          <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&q=80" alt="film photo 1" />
-          <span class="film-number">01▲</span>
-        </div>
-        <div class="film-frame">
-          <img src="https://images.unsplash.com/photo-1501854140801-50d01698950b?w=300&q=80" alt="film photo 2" />
-          <span class="film-number">02▲</span>
-        </div>
-        <div class="film-frame">
-          <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&q=80" alt="film photo 3" />
-          <span class="film-number">03▲</span>
-        </div>
-      </div>
-      <div class="post-body">
-        <div class="post-meta">
-          <span>march 6, 2025</span>
-          <span class="dot">·</span>
-          <span>kodak gold 200</span>
-          <span class="dot">·</span>
-          <span>kodak ektar 35H</span>
-        </div>
-        <h2 class="post-title" id="pics-rotating-title"><a href="pics.html">—</a></h2>
-        <a href="pics.html" class="read-more">view full roll →</a>
-      </div>
-    </article>
-
-    <div class="divider">✦ ✦ ✦</div>
-
-    <!-- POST 2 — Book Reviews -->
-    <article class="post">
-      <div class="post-tag book">📚 book review</div>
-      <div class="book-post-inner">
-        <div class="book-post-cover">📖</div>
-        <div class="book-post-text">
-          <div class="post-meta" style="margin-top:0"><span>latest read</span></div>
-          <h2 class="post-title"><a href="books.html">book reviews</a></h2>
-          <p class="post-excerpt">upload a pic of the cover, rate it, write what you thought.</p>
-          <a href="books.html" class="read-more">go to book reviews →</a>
-        </div>
-      </div>
-    </article>
-
-    <div class="divider">✦ ✦ ✦</div>
-
-    <!-- POST 3 — Life -->
-    <article class="post">
-      <div class="post-tag green">✍️ life</div>
-      <img src="https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&q=80" alt="post image" class="post-image" style="margin-top:12px" />
-      <div class="post-body">
-        <div class="post-meta">
-          <span>feb 15, 2025</span>
-          <span class="dot">·</span>
-          <span>personal</span>
-        </div>
-        <h2 class="post-title"><a href="life.html">things i've been thinking about this month</a></h2>
-        <a href="life.html" class="read-more">keep reading →</a>
-      </div>
-    </article>
+    <div id="cms-posts-placeholder" style="display:none"><!-- posts load here --></div>
 
   </main>
 
@@ -531,7 +473,9 @@
     const img = p.image_url
       ? `<img src="${p.image_url}" alt="${p.title}" class="post-image" style="margin-top:12px" />`
       : '';
-    const excerpt = p.content.length > 220 ? p.content.substring(0,220) + '…' : p.content;
+    const excerpt = (p.content||'').length > 220 ? p.content.substring(0,220) + '…' : (p.content||'');
+    const subtitle = p.subtitle ? `<div style="font-size:13px;color:var(--muted);margin-bottom:6px">${p.subtitle}</div>` : '';
+    const tags = (p.tags||[]).slice(0,3).map(t => `<span style="background:var(--panel);border:1px solid var(--border);font-size:10px;padding:2px 7px;margin-right:4px">${t}</span>`).join('');
     return `
       <article class="post" id="post-${p.id}">
         <div class="post-tag">${tabName}</div>
@@ -539,11 +483,12 @@
         <div class="post-body">
           <div class="post-meta">
             <span>${fmtDate(p.created_at)}</span>
-            <span class="dot">·</span>
-            <span>${tabName}</span>
+            ${p.category ? `<span class="dot">·</span><span>${p.category}</span>` : ''}
           </div>
           <h2 class="post-title"><a href="${tabSlug}.html#post-${p.id}">${p.title}</a></h2>
+          ${subtitle}
           <p class="post-excerpt">${excerpt}</p>
+          ${tags ? `<div style="margin-bottom:12px">${tags}</div>` : ''}
           <a href="${tabSlug}.html#post-${p.id}" class="read-more">keep reading →</a>
         </div>
       </article>`;
@@ -555,26 +500,31 @@
       .select('*, tab:tabs(name,slug)')
       .eq('published', true)
       .order('created_at', { ascending: false })
-      .limit(10);
+      .limit(3);
 
-    if (!data || !data.length) return;
-
-    // Find the feed header inside main
+    // Always clear static posts first (prevents flash)
     const feedHeader = document.querySelector('.feed-header');
     if (!feedHeader) return;
-
-    // Remove existing static posts
     const main = feedHeader.closest('main') || feedHeader.parentElement;
     main.querySelectorAll('article.post').forEach(a => a.remove());
     main.querySelectorAll('.divider').forEach(d => d.remove());
+    document.getElementById('cms-posts-placeholder') && document.getElementById('cms-posts-placeholder').remove();
 
-    // Insert CMS posts after feed header
+    if (!data || !data.length) {
+      const empty = document.createElement('p');
+      empty.style.cssText = 'color:var(--muted);font-style:italic;font-size:14px;margin-top:20px';
+      empty.textContent = 'No posts yet — check back soon!';
+      feedHeader.insertAdjacentElement('afterend', empty);
+      return;
+    }
+
     const wrapper = document.createElement('div');
     wrapper.id = 'cms-posts';
     data.forEach(p => wrapper.innerHTML += renderPost(p));
     feedHeader.insertAdjacentElement('afterend', wrapper);
+    wrapper.classList.add('loaded');
 
-    // Update sidebar recent posts if present
+    // Update sidebar recent posts
     const sidebar = document.getElementById('recent-posts-sidebar');
     if (sidebar) {
       sidebar.innerHTML = data.slice(0,3).map((p,i) => `
@@ -588,7 +538,12 @@
     }
   }
 
-  loadPosts();
+  // Run immediately — don't wait for DOMContentLoaded to avoid flash
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadPosts);
+  } else {
+    loadPosts();
+  }
 })();
 </script>
 </body>
