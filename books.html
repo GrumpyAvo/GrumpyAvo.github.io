@@ -319,13 +319,17 @@
       .rating-badge { width:40px; height:40px; font-size:13px; top:-10px; right:-10px; }
     }
   
-    .books-search-bar { display:flex; gap:12px; align-items:center; margin-bottom:28px; flex-wrap:wrap; }
-    .books-search-input { flex:1; min-width:200px; padding:10px 16px; background:var(--panel); border:1.5px solid var(--border); color:var(--dark); font-family:'Inconsolata',monospace; font-size:14px; outline:none; transition:border-color 0.15s; }
-    .books-search-input:focus { border-color:var(--accent1); }
-    .own-filter-btn { padding:8px 16px; background:none; border:1.5px solid var(--border); color:var(--muted); font-family:'Inconsolata',monospace; font-size:12px; cursor:pointer; transition:all 0.15s; }
-    .own-filter-btn.active { background:var(--accent1); color:white; border-color:var(--accent1); }
-    .own-badge { display:inline-block; background:var(--accent2); color:white; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; padding:2px 6px; margin-top:4px; font-family:'Inconsolata',monospace; }
-    [data-theme="dark"] .books-search-input { background:var(--panel); color:var(--cream); }
+    /* Books search + own */
+    .books-top-bar { display:flex; gap:12px; align-items:center; margin-bottom:24px; flex-wrap:wrap; }
+    .books-search { flex:1; min-width:200px; padding:10px 16px; background:var(--panel); border:1.5px solid var(--border); color:var(--dark); font-family:'Inconsolata',monospace; font-size:13px; outline:none; transition:border-color 0.15s; }
+    .books-search:focus { border-color:var(--accent1); }
+    .own-toggle-btn { padding:8px 14px; background:none; border:1.5px solid var(--border); color:var(--muted); font-family:'Inconsolata',monospace; font-size:12px; cursor:pointer; transition:all 0.15s; }
+    .own-toggle-btn.active { background:var(--accent1); color:white; border-color:var(--accent1); }
+    .own-badge { position:absolute; bottom:8px; left:8px; background:var(--accent2); color:white; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; padding:2px 6px; font-family:'Inconsolata',monospace; border-radius:0; }
+    #cms-books-section { margin-bottom:8px; }
+    #cms-books-section .books-grid { margin-bottom:0; }
+    [data-theme="dark"] .books-search { background:var(--panel); color:var(--cream); }
+
   </style>
 
   <script>
@@ -369,13 +373,16 @@
     </div>
   </div>
   <div class="page-subtitle">books i've read · cover art via open library · rated out of 10</div>
-  <div class="books-search-bar">
-    <input class="books-search-input" id="books-search" placeholder="Search by title or author…" oninput="filterBooks()" />
-    <button class="own-filter-btn" id="own-filter-btn" onclick="toggleOwnFilter()">📚 Owned only</button>
-  </div>
 
   <div id="books-container">
-    <div id="books-grid"><div class="loading-covers-inner">
+    <!-- Books search/filter bar -->
+  <div class="books-top-bar">
+    <input class="books-search" id="books-search" placeholder="Search by title or author…" oninput="booksSearch()" />
+    <button class="own-toggle-btn" id="own-toggle-btn" onclick="booksToggleOwn()">📚 Owned only</button>
+  </div>
+  <!-- CMS books from backend appear here (prepended, never replaces hardcoded) -->
+  <div id="cms-books-section"></div>
+  <!-- Hardcoded books with existing pagination below -->
   <div class="loading-covers"><span class="spinner"></span>loading covers...</div>
   </div>
 
@@ -725,103 +732,109 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
-  const db = supabase.createClient('https://wzvmdpkiwwfhnisjudeo.supabase.co','sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op');
-  let cmsBooks = [];
-  let showOwnedOnly = false;
+  const db = supabase.createClient('https://wzvmdpkiwwfhnisjudeo.supabase.co', 'sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op');
+  let _cmsBooks = [];
+  let _ownOnly = false;
 
-  // ── Fetch cover from Open Library ─────────────────────────────────────────
+  // ── Open Library cover ───────────────────────────────────────────────────
   async function fetchCover(isbn, olid){
-    if(isbn){
-      const url = `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg?default=false`;
+    if (isbn){
+      const url = `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
       try{
-        const res = await fetch(url,{method:'HEAD'});
-        if(res.ok) return `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
+        const r = await fetch(url, {method:'HEAD', mode:'no-cors'});
+        return url; // no-cors always "succeeds" — use img onerror as fallback
       }catch(e){}
     }
-    if(olid){
-      return `https://covers.openlibrary.org/b/olid/${olid}-M.jpg`;
-    }
+    if (olid) return `https://covers.openlibrary.org/b/olid/${olid}-M.jpg`;
     return null;
   }
 
-  function renderCMSBook(b, coverUrl){
-    const stars = '★'.repeat(Math.round(b.rating||0))+'☆'.repeat(10-Math.round(b.rating||0));
-    const ownBadge = b.own_copy ? '<div class="own-badge">📖 own copy</div>' : '';
+  function renderCMSCard(b){
     const ratingColor = (b.rating||0)>=8?'#3a9e6e':(b.rating||0)>=6?'#8b3fc8':'#c04f4f';
-    return `<div class="book-card" data-title="${(b.title||'').toLowerCase()}" data-author="${(b.author||'').toLowerCase()}" data-owned="${b.own_copy?'1':'0'}">
-      <div class="cover-img">
-        ${coverUrl
-          ? `<img src="${coverUrl}" alt="${b.title}" loading="lazy" onerror="this.parentElement.innerHTML=\`<div class='cover-placeholder'><span class='ph-emoji'>📖</span><span class='ph-title'>${b.title}</span></div>\`" />`
-          : `<div class='cover-placeholder'><span class='ph-emoji'>📖</span><span class='ph-title'>${b.title}</span></div>`
+    const ownBadge = b.own_copy ? '<div class="own-badge">own copy</div>' : '';
+    const cover = b._cover;
+    return `<div class="book-card size-normal"
+      data-title="${(b.title||'').toLowerCase().replace(/"/g,'&quot;')}"
+      data-author="${(b.author||'').toLowerCase().replace(/"/g,'&quot;')}"
+      data-owned="${b.own_copy?'1':'0'}">
+      <div class="cover-img" style="position:relative">
+        ${cover
+          ? `<img src="${cover}" alt="${b.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="cover-placeholder" style="display:none"><span class="ph-emoji">📖</span><span class="ph-title">${b.title}</span></div>`
+          : `<div class="cover-placeholder"><span class="ph-emoji">📖</span><span class="ph-title">${b.title}</span></div>`
         }
-        <div class="rating-badge" style="background:${ratingColor};color:white;position:absolute;top:8px;right:8px;padding:4px 8px;font-size:12px;font-weight:700">${b.rating||'?'}/10</div>
+        <div class="rating-badge" style="background:${ratingColor}">${b.rating != null ? b.rating+'/10' : '?'}</div>
+        ${ownBadge}
       </div>
       <div class="card-title">${b.title||''}</div>
       <div class="card-author">${b.author||''}</div>
-      ${ownBadge}
     </div>`;
   }
 
-  async function loadCMSBooks(){
-    const {data:tabs} = await db.from('tabs').select('id').eq('slug','book-reviews').single();
-    if(!tabs) return;
-    const {data} = await db.from('posts').select('*').eq('tab_id',tabs.id).eq('published',true).neq('status','hidden').order('created_at',{ascending:false});
-    if(!data||!data.length) return;
-
-    // Extend each post with cover
-    cmsBooks = await Promise.all(data.map(async p => {
-      const isbn = p.isbn||null;
-      const olid = p.olid||null;
-      const cover = await fetchCover(isbn, olid);
-      return {...p, _coverUrl: cover};
-    }));
-
-    renderBooks();
-  }
-
-  function renderBooks(){
-    const grid = document.getElementById('books-grid');
-    if(!grid) return;
-    // Show CMS books at top, keep hardcoded below
-    let existing = grid.querySelector('#cms-books-section');
-    if(!existing){
-      existing = document.createElement('div');
-      existing.id = 'cms-books-section';
-      grid.prepend(existing);
-    }
-
+  function renderCMSSection(){
+    const section = document.getElementById('cms-books-section');
+    if (!section) return;
     const search = (document.getElementById('books-search')||{value:''}).value.toLowerCase();
-    const filtered = cmsBooks.filter(b => {
-      if(showOwnedOnly && !b.own_copy) return false;
-      if(search && !(b.title||'').toLowerCase().includes(search) && !(b.author||'').toLowerCase().includes(search)) return false;
+    const filtered = _cmsBooks.filter(b => {
+      if (_ownOnly && !b.own_copy) return false;
+      if (search && !(b.title||'').toLowerCase().includes(search) && !(b.author||'').toLowerCase().includes(search)) return false;
       return true;
     });
-
-    existing.innerHTML = filtered.map(b => renderCMSBook(b, b._coverUrl)).join('');
+    if (!filtered.length) { section.innerHTML = ''; return; }
+    const grid = document.createElement('div');
+    grid.className = 'books-grid';
+    grid.innerHTML = filtered.map(renderCMSCard).join('');
+    section.innerHTML = '';
+    section.appendChild(grid);
   }
 
-  window.filterBooks = function(){
-    // Filter both CMS and hardcoded
-    renderBooks();
+  async function loadCMSBooks(){
+    const {data: tabs} = await db.from('tabs').select('id').eq('slug','book-reviews').single();
+    if (!tabs) return;
+    const {data} = await db.from('posts')
+      .select('*')
+      .eq('tab_id', tabs.id)
+      .eq('published', true)
+      .neq('status', 'hidden')
+      .order('created_at', {ascending: false});
+    if (!data || !data.length) return;
+    _cmsBooks = await Promise.all(data.map(async p => {
+      const cover = await fetchCover(p.isbn||null, p.olid||null);
+      return {...p, _cover: cover};
+    }));
+    renderCMSSection();
+  }
+
+  // ── Search & filter that works on BOTH CMS and hardcoded cards ───────────
+  window.booksSearch = function(){
+    renderCMSSection();
+    applyHardcodedFilter();
+  };
+
+  window.booksToggleOwn = function(){
+    _ownOnly = !_ownOnly;
+    const btn = document.getElementById('own-toggle-btn');
+    if (btn) btn.classList.toggle('active', _ownOnly);
+    renderCMSSection();
+    applyHardcodedFilter();
+  };
+
+  function applyHardcodedFilter(){
     const search = (document.getElementById('books-search')||{value:''}).value.toLowerCase();
-    document.querySelectorAll('.book-card:not(#cms-books-section .book-card)').forEach(card => {
-      const title = (card.dataset.title||card.querySelector('.card-title,.book-title')?.textContent||'').toLowerCase();
-      const author = (card.dataset.author||card.querySelector('.card-author,.book-author')?.textContent||'').toLowerCase();
+    document.querySelectorAll('.books-grid-wrap .book-card').forEach(card => {
+      const title = (card.querySelector('.card-title')?.textContent||'').toLowerCase();
+      const author = (card.querySelector('.card-author')?.textContent||'').toLowerCase();
       const owned = card.dataset.owned;
       const matchSearch = !search || title.includes(search) || author.includes(search);
-      const matchOwn = !showOwnedOnly || owned==='1';
+      const matchOwn = !_ownOnly || owned === '1';
       card.style.display = (matchSearch && matchOwn) ? '' : 'none';
     });
-  };
+  }
 
-  window.toggleOwnFilter = function(){
-    showOwnedOnly = !showOwnedOnly;
-    const btn = document.getElementById('own-filter-btn');
-    if(btn) btn.classList.toggle('active', showOwnedOnly);
-    filterBooks();
-  };
-
-  loadCMSBooks();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadCMSBooks);
+  } else {
+    loadCMSBooks();
+  }
 })();
 </script>
 </body>
