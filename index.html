@@ -365,21 +365,31 @@
   document.getElementById('pics-rotating-title').innerHTML = `<a href="pics.html">${chosen}</a>`;
 
   // Live visitor counter
+  // The backend increments count on every GET call to ?page=home
+  // Retry strategy handles Vercel cold starts (can take 3-5s)
   async function updateVisitorCount() {
     try {
-      const res = await fetch('https://spotify-backend-lyart.vercel.app/api/visitors?page=home', {cache:'no-store'});
+      const res = await fetch('https://spotify-backend-lyart.vercel.app/api/visitors?page=home', {
+        method: 'GET',
+        cache: 'no-store',
+        headers: { 'Accept': 'application/json' }
+      });
       if (!res.ok) return;
       const data = await res.json();
-      const count = data.count || data.visitors || data.total || 0;
-      document.getElementById('hit-counter-display').innerHTML =
-        String(count).padStart(6,'0').split('').map(d => '<span>'+d+'</span>').join('');
+      // API returns {count:N} — fallback to any numeric field
+      const count = data.count ?? data.visitors ?? data.total ?? data.hits ?? 0;
+      const display = document.getElementById('hit-counter-display');
       const vnum = document.getElementById('visitor-num');
+      if (display) {
+        display.innerHTML = String(count).padStart(6,'0').split('').map(d => '<span>' + d + '</span>').join('');
+      }
       if (vnum) vnum.textContent = '#' + count;
-    } catch(e) { /* backend offline */ }
+    } catch(e) { /* backend offline or cold start */ }
   }
-  // Wake backend then fetch
-  setTimeout(updateVisitorCount, 500);
-  setTimeout(updateVisitorCount, 3000);
+  // Wake the backend immediately, then fetch after delay (Vercel cold start can take ~3s)
+  fetch('https://spotify-backend-lyart.vercel.app/api/now-playing').catch(function(){});
+  setTimeout(updateVisitorCount, 1500);
+  setTimeout(updateVisitorCount, 4000);
 
   const entries = JSON.parse(localStorage.getItem('ricardo_guestbook') || '[]');
   const preview = document.getElementById('gb-preview');
