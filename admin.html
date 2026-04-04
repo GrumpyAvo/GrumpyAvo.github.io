@@ -345,10 +345,26 @@
             </select>
           </div>
         </div>
-        <!-- Source URL (for studies page) -->
-        <div class="editor-field" style="margin-bottom:14px" id="source-url-field">
-          <label>Source URL <span style="opacity:0.5;font-size:9px">— clicking the card on the site will open this link (optional)</span></label>
-          <input type="url" id="ed-source-url" placeholder="https://example.com/paper.pdf" />
+        <!-- Source URL + own copy + author row -->
+        <div class="meta-grid" style="margin-bottom:14px">
+          <div class="editor-field">
+            <label>Source URL <span style="opacity:0.5;font-size:9px">— clicking card opens this link</span></label>
+            <input type="url" id="ed-source-url" placeholder="https://example.com/paper.pdf" />
+          </div>
+          <div class="editor-field">
+            <label>Author <span style="opacity:0.5;font-size:9px">— for book reviews</span></label>
+            <input type="text" id="ed-author" placeholder="e.g. George Orwell" />
+          </div>
+        </div>
+        <div class="meta-grid" style="margin-bottom:14px">
+          <div class="editor-field">
+            <label>ISBN <span style="opacity:0.5;font-size:9px">— for book cover auto-fetch</span></label>
+            <input type="text" id="ed-isbn" placeholder="e.g. 9780451524935" />
+          </div>
+          <div class="editor-field" style="display:flex;align-items:center;gap:10px;padding-top:24px">
+            <input type="checkbox" id="ed-own-copy" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" />
+            <label for="ed-own-copy" style="color:var(--cream);font-size:13px;cursor:pointer;text-transform:none;letter-spacing:0">📖 I own a physical copy</label>
+          </div>
         </div>
         <!-- Tags -->
         <div class="editor-field" style="margin-bottom:14px">
@@ -471,15 +487,22 @@ async function handleSignUp(){
   if(pw!==conf){err.textContent='Passwords do not match';err.style.display='block';return;}
   if(pw.length<6){err.textContent='Password must be at least 6 characters';err.style.display='block';return;}
   btn.disabled=true; btn.textContent='Requesting…';
-  const {error:authErr}=await db.auth.signUp({email,password:pw});
-  if(authErr&&!authErr.message.includes('already registered')){
+  // Pass emailRedirectTo so Supabase doesn't redirect to localhost.
+  // If email confirmation is disabled in Supabase dashboard this is ignored.
+  const redirectTo = window.location.href.split('?')[0];
+  const {error:authErr}=await db.auth.signUp({
+    email, password:pw,
+    options:{ emailRedirectTo: redirectTo }
+  });
+  if(authErr&&!authErr.message.includes('already registered')&&!authErr.message.includes('User already')){
     err.textContent=authErr.message;err.style.display='block';btn.disabled=false;btn.textContent='Request Access';return;
   }
-  // Insert into pending_users — use upsert to handle duplicates
-  const {error:dbErr}=await db.from('pending_users').upsert({email,status:'pending'},{onConflict:'email',ignoreDuplicates:false});
-  if(dbErr&&!dbErr.message.includes('duplicate')){
-    // Try plain insert as fallback
-    await db.from('pending_users').insert({email,status:'pending'}).select();
+  // Store in pending_users regardless of whether auth account already exists
+  const {error:dbErr}=await db.from('pending_users')
+    .upsert({email,status:'pending'},{onConflict:'email',ignoreDuplicates:false});
+  if(dbErr){
+    // If upsert fails, try insert (ignore duplicate key errors)
+    await db.from('pending_users').insert({email,status:'pending'}).select().maybeSingle();
   }
   ok.textContent='✓ Request submitted! You\'ll get access once the admin approves you.';
   ok.style.display='block'; btn.disabled=false; btn.textContent='Request Access';
@@ -489,8 +512,14 @@ async function handleSignUp(){
 async function checkAccessAndBoot(email){
   currentUserEmail=email;
   if(email===ADMIN_EMAIL){bootApp(true);return;}
-  const {data}=await db.from('pending_users').select('status').eq('email',email).single();
-  if(!data||data.status==='pending'){
+  // Use maybeSingle() so missing row returns null instead of throwing an error
+  const {data}=await db.from('pending_users').select('status').eq('email',email).maybeSingle();
+  // No row found = user was approved directly, or admin added them — allow access
+  if(!data){
+    bootApp(false);
+    return;
+  }
+  if(data.status==='pending'){
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('pending-screen').style.display='flex';
     return;
@@ -501,6 +530,7 @@ async function checkAccessAndBoot(email){
     err.textContent='Your access request was rejected.'; err.style.display='block';
     return;
   }
+  // approved
   bootApp(false);
 }
 
@@ -662,7 +692,7 @@ function removeTag(i){currentTags.splice(i,1);renderTagChips();}
 // ── EDITOR ────────────────────────────────────────────────────────────────────
 function resetEditor(){
   editingPostId=null; currentImageUrl=''; isPreviewing=false; currentTags=[];
-  ['ed-title','ed-subtitle','ed-category','ed-content','ed-source-url'].forEach(id=>{
+  ['ed-title','ed-subtitle','ed-category','ed-content','ed-source-url','ed-author','ed-isbn'].forEach(id=>{
     const el=document.getElementById(id); if(el)el.value='';
   });
   document.getElementById('ed-status').value='published';
@@ -674,6 +704,7 @@ function resetEditor(){
   document.getElementById('editor-error').style.display='none';
   renderTagChips();
   if(allPages.length)document.getElementById('ed-tab').value=allPages[0].id;
+  if(document.getElementById('ed-own-copy'))document.getElementById('ed-own-copy').checked=false;
 }
 
 function updateStatusStyle(){
@@ -687,25 +718,39 @@ function updateStatusStyle(){
 function editPost(id){
   const p=allPosts.find(x=>x.id===id);
   if(!p)return;
-  editingPostId=id; currentTags=p.tags||[]; currentImageUrl=p.image_url||'';
-  // FIX: directly set values, then call showPage so resetEditor doesn't overwrite
-  showPage('editor'); // this calls resetEditor first
-  // Now re-populate after reset
+  // Switch to editor page directly (bypasses resetEditor)
+  document.querySelectorAll('.page').forEach(pg=>pg.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-editor').classList.add('active');
+  document.querySelectorAll('.nav-item')[2].classList.add('active');
+  // Restore preview state
+  isPreviewing=false;
+  document.getElementById('ed-content').style.display='block';
+  document.getElementById('preview-pane').style.display='none';
+  document.getElementById('preview-toggle-btn').textContent='👁 Preview';
+  document.getElementById('editor-error').style.display='none';
+  // Populate ALL fields
+  editingPostId=id;
   document.getElementById('ed-title').value=p.title||'';
   document.getElementById('ed-subtitle').value=p.subtitle||'';
   document.getElementById('ed-content').value=p.content||'';
   document.getElementById('ed-category').value=p.category||'';
   document.getElementById('ed-source-url').value=p.source_url||'';
-  document.getElementById('ed-tab').value=p.tab_id||'';
-  // Status
-  if(!p.published)document.getElementById('ed-status').value='draft';
-  else if(p.status==='hidden')document.getElementById('ed-status').value='hidden';
+  if(document.getElementById('ed-author')) document.getElementById('ed-author').value=p.author||'';
+  if(document.getElementById('ed-isbn'))   document.getElementById('ed-isbn').value=p.isbn||'';
+  if(document.getElementById('ed-own-copy')) document.getElementById('ed-own-copy').checked=!!p.own_copy;
+  if(allPages.length) {
+    document.getElementById('ed-tab').value=p.tab_id||allPages[0].id;
+  }
+  if(!p.published) document.getElementById('ed-status').value='draft';
+  else if(p.status==='hidden') document.getElementById('ed-status').value='hidden';
   else document.getElementById('ed-status').value='published';
   updateStatusStyle();
-  currentTags=p.tags||[]; renderTagChips();
-  editingPostId=id; // restore after reset cleared it
-  if(currentImageUrl)showImagePreview(currentImageUrl);
-  document.getElementById('editor-error').style.display='none';
+  currentTags=Array.isArray(p.tags)?[...p.tags]:[];
+  renderTagChips();
+  currentImageUrl=p.image_url||'';
+  if(currentImageUrl) showImagePreview(currentImageUrl);
+  else document.getElementById('image-area').innerHTML=`<button class="image-upload-btn" onclick="document.getElementById('image-file-input').click()">⬆ Upload image</button>`;
 }
 
 function togglePreview(){
@@ -760,6 +805,9 @@ async function savePost(){
   err.style.display='none';
   const btn=document.getElementById('save-btn');
   btn.disabled=true; btn.textContent='⏳ Saving…';
+  const author = document.getElementById('ed-author') ? document.getElementById('ed-author').value.trim() : '';
+  const isbn = document.getElementById('ed-isbn') ? document.getElementById('ed-isbn').value.trim() : '';
+  const ownCopy = document.getElementById('ed-own-copy') ? document.getElementById('ed-own-copy').checked : false;
   const payload={
     title, subtitle:subtitle||null, content, tab_id:tabId,
     published:statusVal!=='draft',
@@ -767,7 +815,10 @@ async function savePost(){
     image_url:currentImageUrl||null,
     tags:currentTags,
     category:category||null,
-    source_url:sourceUrl||null
+    source_url:sourceUrl||null,
+    author:author||null,
+    isbn:isbn||null,
+    own_copy:ownCopy
   };
   let error;
   if(editingPostId){({error}=await db.from('posts').update(payload).eq('id',editingPostId));}
