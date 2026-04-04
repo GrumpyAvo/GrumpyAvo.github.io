@@ -115,6 +115,13 @@
     [data-theme="dark"] .form-group textarea {
       background:#1c1530; color:#ede8f7; border-color:#3d2a5e;
     }
+  
+    /* CMS studies */
+    #cms-studies-section .paper-card { animation: fadeCardIn 0.3s ease; }
+    @keyframes fadeCardIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .paper-card[data-link] { cursor:pointer; }
+    .paper-card[data-link]:hover { border-color:var(--accent1); }
+
   </style>
 
 
@@ -164,6 +171,11 @@
 <div class="page-wrap">
   <div class="page-title">📊 studies</div>
   <div class="page-subtitle">papers i've read. things worth thinking about.</div>
+
+  <!-- CMS studies posts appear here — managed via admin.html -->
+  <div id="cms-studies-section"></div>
+
+  <!-- Static / hardcoded studies below -->
 
 
   <div class="paper-card">
@@ -266,57 +278,45 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function() {
+(function(){
   const db = supabase.createClient('https://wzvmdpkiwwfhnisjudeo.supabase.co', 'sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op');
-  const TAB_SLUG = 'studies';
 
-  function fmtDate(s) {
-    return new Date(s).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+  function renderCard(p){
+    const tag = p.category || (p.tags && p.tags[0]) || 'study';
+    // pick tag colour based on category
+    const tagMap = {'economics':'', 'education':'blue', 'crime':'red', 'intelligence':'blue', 'policy':'green', 'gender':''};
+    const tagClass = Object.keys(tagMap).find(k => tag.toLowerCase().includes(k));
+    const cls = tagMap[tagClass] || '';
+    const authors = p.subtitle || '';
+    const clickAttr = p.source_url ? `onclick="window.open('${p.source_url.replace(/'/g,"\\'")}','_blank')" data-link="1"` : '';
+    return `<div class="paper-card" ${clickAttr}>
+      <span class="paper-tag ${cls}">${tag}</span>
+      <div class="paper-title">${p.title || ''}</div>
+      ${authors ? `<div class="paper-authors">${authors}</div>` : ''}
+      ${p.content ? `<div class="paper-summary">${p.content}</div>` : ''}
+    </div>`;
   }
 
-  function renderPost(p) {
-    const img = p.image_url
-      ? `<img src="${p.image_url}" alt="${p.title}" class="post-image" />`
-      : '';
-    return `
-      <article class="post" id="post-${p.id}">
-        <div class="post-tag">✍️ ${TAB_SLUG}</div>
-        ${img}
-        <div class="post-body">
-          <div class="post-meta"><span>${fmtDate(p.created_at)}</span></div>
-          <h2 class="post-title">${p.title}</h2>
-          <div class="post-excerpt" style="white-space:pre-wrap;font-size:14px;line-height:1.7;color:#4a3d60;margin-bottom:16px">${p.content}</div>
-        </div>
-      </article>`;
-  }
-
-  async function loadPosts() {
-    const { data: tabs } = await db.from('tabs').select('id').eq('slug', TAB_SLUG).single();
-    if (!tabs) return;
-
-    const { data } = await db
-      .from('posts')
+  async function loadStudies(){
+    const section = document.getElementById('cms-studies-section');
+    if (!section) return;
+    const {data: tabs} = await db.from('tabs').select('id').eq('slug','studies').single();
+    if (!tabs) return; // no tab = no CMS content, static cards still show
+    const {data} = await db.from('posts')
       .select('*')
       .eq('tab_id', tabs.id)
       .eq('published', true)
-      .order('created_at', { ascending: false });
-
-    if (!data || !data.length) return;
-
-    // Find insertion point
-    const wrap = document.querySelector('.page-wrap') || document.querySelector('main');
-    if (!wrap) return;
-
-    // Remove static placeholder posts
-    wrap.querySelectorAll('article.post').forEach(a => a.remove());
-
-    const wrapper = document.createElement('div');
-    wrapper.id = 'cms-posts';
-    data.forEach(p => wrapper.innerHTML += renderPost(p));
-    wrap.appendChild(wrapper);
+      .neq('status', 'hidden')
+      .order('created_at', {ascending: false});
+    if (!data || !data.length) return; // static cards still show
+    section.innerHTML = data.map(renderCard).join('');
   }
 
-  loadPosts();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadStudies);
+  } else {
+    loadStudies();
+  }
 })();
 </script>
 </body>
