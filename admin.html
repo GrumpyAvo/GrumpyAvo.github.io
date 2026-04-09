@@ -188,10 +188,10 @@
     </div>
     <div id="form-signin">
       <div id="signin-err" class="err" style="display:none"></div>
-      <div class="field"><label>Email</label><input type="email" id="si-email" autocomplete="email" /></div>
+      <div class="field"><label>Email</label><input type="email" id="si-email" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('si-password').focus()" /></div>
       <div class="field"><label>Password</label>
         <div class="input-wrap">
-          <input type="password" id="si-password" autocomplete="current-password" />
+          <input type="password" id="si-password" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleSignIn()" />
           <button type="button" class="pw-eye" onclick="togglePw('si-password',this)">👁</button>
         </div>
       </div>
@@ -636,12 +636,15 @@ async function handleSignIn(){
   const pass=document.getElementById('si-password').value;
   const err=document.getElementById('signin-err');
   err.style.display='none';
-  document.getElementById('signin-btn').disabled=true;
+  if(!email||!pass){err.textContent='Email and password required.';err.style.display='block';return;}
+  const btn=document.getElementById('signin-btn');
+  btn.disabled=true; btn.textContent='Signing in…';
   const {error}=await db.auth.signInWithPassword({email,password:pass});
-  document.getElementById('signin-btn').disabled=false;
+  btn.disabled=false; btn.textContent='Sign In';
   if(error){err.textContent=error.message;err.style.display='block';return;}
-  await checkAccessAndBoot(email);
+  bootApp();
 }
+
 async function handleSignUp(){
   const email=document.getElementById('su-email').value.trim();
   const err=document.getElementById('signup-err');
@@ -654,28 +657,22 @@ async function handleSignUp(){
   msg.textContent='Request submitted! Check back soon.';
   msg.style.display='block';
 }
-async function checkAccessAndBoot(email){
-  const {data}=await db.from('pending_users').select('status').eq('email',email).maybeSingle();
-  if(!data||data.status!=='approved'){
-    const err=document.getElementById('signin-err');
-    err.textContent='Access not yet approved.';err.style.display='block';
-    await db.auth.signOut(); return;
-  }
-  bootApp(email==='admin@white.com'||email.includes('admin'));
-}
-function bootApp(isAdmin){
+
+function bootApp(){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  if(isAdmin)document.getElementById('nav-users').style.display='flex';
+  document.getElementById('nav-users').style.display='flex';
   db.auth.getUser().then(({data})=>{
     if(data?.user)document.getElementById('user-email-display').textContent=data.user.email;
   });
   loadAll();
 }
+
 async function handleSignOut(){await db.auth.signOut();location.reload();}
 
-db.auth.onAuthStateChange(async(event,session)=>{
-  if(session?.user)await checkAccessAndBoot(session.user.email);
+// Resume session on page reload
+db.auth.getSession().then(({data:{session}})=>{
+  if(session?.user) bootApp();
 });
 
 // ── LOAD ALL ─────────────────────────────────────────────────────────────────
