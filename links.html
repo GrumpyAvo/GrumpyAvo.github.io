@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>links · white</title>
+  <title>Links · white</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inconsolata:wght@400;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -109,6 +109,83 @@
       background:#1c1530; color:#ede8f7; border-color:#3d2a5e;
     }
   
+    /* ── shared post/section styles ── */
+    .post{margin-bottom:32px;border:1.5px solid var(--dark);background:white;position:relative;transition:transform 0.2s,box-shadow 0.2s;box-shadow:3px 3px 0 var(--dark);}
+    .post:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dark);}
+    .post-tag{position:absolute;top:-11px;left:16px;z-index:10;background:var(--accent1);color:white;font-family:'Blowpis','Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;padding:3px 10px;}
+    .post-image{width:100%;height:220px;object-fit:cover;display:block;border-bottom:1.5px solid var(--dark);}
+    .post-body{padding:20px 22px 22px;}
+    .post-meta{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);}
+    .post-title{font-family:'Syne',serif;font-weight:800;font-size:1.2rem;line-height:1.2;margin-bottom:10px;}
+    .post-title a{text-decoration:none;color:inherit;}
+    .post-title a:hover{color:var(--accent1);}
+    .post-excerpt{color:#4a3d60;font-size:14px;line-height:1.65;margin-bottom:16px;}
+    .read-more{display:inline-block;font-family:'Blowpis','Syne',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--dark);text-decoration:none;border:1.5px solid var(--dark);padding:6px 14px;}
+    .read-more:hover{background:var(--accent1);color:white;border-color:var(--accent1);}
+    .feed-header{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+    .feed-header h2{font-family:'Blowpis','Syne',sans-serif;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);}
+    .feed-header::after{content:'';flex:1;height:1px;background:var(--border);}
+    .books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px;padding-top:8px;}
+    .book-card{border:1.5px solid var(--dark);background:white;box-shadow:3px 3px 0 var(--dark);transition:transform .2s,box-shadow .2s;}
+    .book-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dark);}
+    .book-cover{width:100%;height:200px;object-fit:cover;border-bottom:1.5px solid var(--dark);display:block;}
+    .book-cover-placeholder{width:100%;height:200px;background:var(--panel);border-bottom:1.5px solid var(--dark);display:flex;align-items:center;justify-content:center;font-size:40px;}
+    .book-info{padding:10px 12px;}
+    .book-title-text{font-family:'Syne',serif;font-weight:700;font-size:13px;line-height:1.3;margin-bottom:4px;}
+    .book-author{font-size:11px;color:var(--muted);margin-bottom:4px;}
+    .book-stars{color:#f59e0b;font-size:13px;}
+    .photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+    .photo-item{border:1.5px solid var(--dark);overflow:hidden;aspect-ratio:4/3;position:relative;cursor:pointer;}
+    .photo-item img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(10%) contrast(1.05);transition:filter .3s,transform .3s;}
+    .photo-item:hover img{filter:sepia(0%) contrast(1);transform:scale(1.03);}
+    .photo-caption{position:absolute;bottom:0;left:0;right:0;background:rgba(26,18,40,.8);color:var(--cream);font-size:11px;padding:6px 10px;transform:translateY(100%);transition:transform .2s;}
+    .photo-item:hover .photo-caption{transform:translateY(0);}
+    .music-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;}
+    .music-card{border:1.5px solid var(--dark);background:white;box-shadow:3px 3px 0 var(--dark);transition:transform .2s;}
+    .music-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dark);}
+    .music-cover{width:100%;height:170px;object-fit:cover;display:block;border-bottom:1.5px solid var(--dark);}
+    .music-cover-ph{width:100%;height:170px;background:var(--dark);display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1.5px solid var(--dark);}
+    .music-info{padding:10px 12px;}
+    .music-title-text{font-family:'Syne',serif;font-weight:700;font-size:13px;margin-bottom:2px;}
+    .music-artist{font-size:11px;color:var(--muted);}
+    .music-type{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent1);margin-top:4px;}
+    .links-list{display:flex;flex-direction:column;gap:10px;}
+    .link-item{border:1px solid var(--border);padding:12px 16px;background:white;}
+    .link-item a{font-weight:600;text-decoration:none;color:var(--dark);}
+    .link-item a:hover{color:var(--accent1);}
+    .link-desc{font-size:12px;color:var(--muted);margin-top:3px;}
+    .links-category-header{font-family:'Blowpis','Syne',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin:24px 0 12px;display:flex;align-items:center;gap:12px;}
+    .links-category-header::after{content:'';flex:1;height:1px;background:var(--border);}
+    .gb-form{background:white;border:1.5px solid var(--dark);box-shadow:3px 3px 0 var(--dark);padding:24px;margin-bottom:32px;}
+    .gb-form h3{font-family:'Syne',serif;font-weight:700;font-size:1rem;margin-bottom:16px;}
+    .form-group{margin-bottom:14px;}
+    .form-group label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--accent1);margin-bottom:6px;}
+    .form-group input,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);background:var(--cream);color:var(--dark);font-family:inherit;font-size:14px;outline:none;transition:border-color .15s;}
+    .form-group input:focus,.form-group textarea:focus{border-color:var(--accent1);}
+    .gb-submit{background:var(--accent1);border:none;color:white;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.15em;padding:10px 24px;cursor:pointer;}
+    .gb-submit:hover{opacity:.85;}
+    .gb-entries{display:flex;flex-direction:column;gap:16px;}
+    .gb-entry-card{border:1.5px solid var(--dark);background:white;box-shadow:2px 2px 0 var(--dark);padding:18px 20px;}
+    .gb-name{font-family:'Syne',serif;font-weight:700;font-size:14px;margin-bottom:2px;}
+    .gb-date{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}
+    .gb-message{font-size:14px;line-height:1.6;color:#4a3d60;}
+    .gb-msg-ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.4);color:#065f46;padding:10px 14px;font-size:13px;margin-top:12px;}
+    .gb-msg-err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#991b1b;padding:10px 14px;font-size:13px;margin-top:12px;}
+    .gb-closed{padding:16px;background:var(--panel);border:1px solid var(--border);font-size:14px;color:var(--muted);margin-bottom:24px;font-style:italic;}
+    .text-block{font-size:15px;line-height:1.8;color:#3a2d55;max-width:680px;}
+    .text-block h1,.text-block h2,.text-block h3{font-family:'Syne',serif;margin:1.4rem 0 .6rem;line-height:1.2;}
+    .text-block p{margin-bottom:1rem;}
+    .text-block a{color:var(--accent1);}
+    .text-block blockquote{border-left:3px solid var(--accent1);padding-left:1rem;color:var(--muted);margin:1rem 0;}
+    .section-loading{padding:40px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;}
+    .empty-notice{padding:32px 0;color:var(--muted);font-size:14px;font-style:italic;}
+    #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center;}
+    #lightbox.open{display:flex;}
+    #lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;}
+    #lightbox-close{position:fixed;top:20px;right:24px;color:white;font-size:28px;cursor:pointer;z-index:10000;line-height:1;}
+    [data-theme="dark"] .post,[data-theme="dark"] .book-card,[data-theme="dark"] .music-card,[data-theme="dark"] .link-item,[data-theme="dark"] .gb-form,[data-theme="dark"] .gb-entry-card{background:#261d3d !important;}
+    [data-theme="dark"] .post-excerpt,[data-theme="dark"] .gb-message,[data-theme="dark"] .text-block{color:#c9bfe0;}
+    [data-theme="dark"] .form-group input,[data-theme="dark"] .form-group textarea{background:#1c1530;color:#ede8f7;border-color:#3d2f5e;}
   </style>
   <script>
     (function() {
@@ -129,7 +206,7 @@
     <a href="index.html">white</a>
   </div>
 </header>
-<nav>
+<nav id="site-nav">
   <a href="index.html">home</a>
   <a href="about.html">about</a>
   <a href="life.html">life</a>
@@ -143,9 +220,9 @@
 <div class="page-wrap">
   <div class="page-title">🔗 links</div>
   <div class="page-subtitle">places i like on the internet.</div>
-
-  <div id="links-container"><div style="font-size:13px;color:var(--muted);font-style:italic">loading links…</div></div>
+  <div id="main-content" style="margin-top:24px"><div class="section-loading">loading…</div></div>
 </div>
+
 <footer>
   <div>
     <div style="font-family:'Blowpis','Syne',sans-serif;font-weight:800;font-size:16px;margin-bottom:4px">white</div>
@@ -154,7 +231,7 @@
   <div style="display:flex;align-items:center;gap:16px;"><a href="index.html">← back home</a> <button class="dark-toggle" id="theme-toggle">☾ dark</button></div>
 </footer>
 
-
+<div id="lightbox"><span id="lightbox-close">✕</span><img id="lightbox-img" src="" alt="" /></div>
 
 <script>
 
@@ -613,43 +690,88 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(active)applyFont(true);
 })();
 
+// ── START ─────────────────────────────────────────────────────────────────────
+boot();
+
+// Override boot to use fixed slug
 async function boot() {
   buildNav('links');
+  loadSidebarData();
+  loadNowPlaying();
   loadHitCounter();
-
-  const container = document.getElementById('links-container');
-
-  const {data: links} = await db.from('links')
-    .select('*').eq('visible', true)
-    .order('order').limit(200);
-
-  if (!links || !links.length) {
-    container.innerHTML = '<div style="font-size:13px;color:var(--muted);font-style:italic">no links yet — check back soon!</div>';
+  const slug = 'links';
+  const {data: tab} = await db.from('tabs').select('*').eq('slug', slug).single();
+  if (!tab) {
+    document.getElementById('main-content').innerHTML = '<div class="empty-notice">This page hasn\'t been set up yet.<br/><br/>Go to <a href="admin.html">Admin → Import Data</a> and click <strong>Import All</strong>, then come back.</div>';
     return;
   }
-
-  // Group by category
-  const cats = {};
-  links.forEach(l => {
-    const c = l.category || 'misc';
-    if (!cats[c]) cats[c] = [];
-    cats[c].push(l);
-  });
-
-  container.innerHTML = Object.entries(cats).map(([cat, items]) => `
-    <div class="link-section">
-      <div class="link-section-title">★ ${esc(cat)}</div>
-      ${items.map(l => `
-        <div class="link-item">
-          <a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>
-          ${l.description ? `<p style="font-size:12px;color:var(--muted);margin-top:2px">${esc(l.description)}</p>` : ''}
-        </div>`).join('')}
-    </div>`).join('');
+  document.title = tab.name + ' · white';
+  const {data: sections} = await db.from('sections').select('*').eq('tab_id', tab.id).eq('visible', true).order('order');
+  if (!sections || !sections.length) {
+    // Fallback: query the right content directly
+    const t = tab.page_type;
+    const mc = document.getElementById('main-content');
+    if (t === 'books') {
+      const {data: books} = await db.from('books').select('*').eq('status','published').order('created_at',{ascending:false}).limit(48);
+      mc.innerHTML = books && books.length
+        ? `<div class="books-grid">${books.map(b=>`<div class="book-card">${b.cover_url?`<img class="book-cover" src="${esc(b.cover_url)}" alt="${esc(b.title)}" />`:`<div class="book-cover-placeholder">📚</div>`}<div class="book-info"><div class="book-title-text">${esc(b.title)}</div><div class="book-author">${esc(b.author||'')}</div>${b.rating?`<div class="book-stars">${'★'.repeat(b.rating)}</div>`:''}</div></div>`).join('')}</div>`
+        : '<div class="empty-notice">No books yet.</div>';
+    } else if (t === 'photos') {
+      const {data: photos} = await db.from('photos').select('*').eq('visible',true).order('order').limit(200);
+      mc.innerHTML = photos && photos.length
+        ? `<div class="photos-grid">${photos.map(p=>`<div class="photo-item" onclick="openLightbox('${esc(p.url)}')" ><img src="${esc(p.url)}" alt="${esc(p.caption||'')}" loading="lazy" />${p.caption?`<div class="photo-caption">${esc(p.caption)}</div>`:''}</div>`).join('')}</div>`
+        : '<div class="empty-notice">No photos yet.</div>';
+    } else if (t === 'music') {
+      const {data: tracks} = await db.from('music').select('*').eq('status','published').order('created_at',{ascending:false}).limit(48);
+      mc.innerHTML = tracks && tracks.length
+        ? `<div class="music-grid">${tracks.map(t=>`<div class="music-card">${t.cover_url?`<img class="music-cover" src="${esc(t.cover_url)}" alt="${esc(t.title)}" />`:`<div class="music-cover-ph">♪</div>`}<div class="music-info"><div class="music-title-text">${esc(t.title)}</div><div class="music-artist">${esc(t.artist)}</div><div class="music-type">${esc(t.type||'')}</div>${t.rating?`<div style="color:#f59e0b">${'★'.repeat(t.rating)}</div>`:''}</div></div>`).join('')}</div>`
+        : '<div class="empty-notice">No music yet.</div>';
+    } else if (t === 'guestbook') {
+      mc.innerHTML = await renderGuestbook({});
+    } else if (t === 'links') {
+      const {data: links} = await db.from('links').select('*').eq('visible',true).order('order').limit(200);
+      if (links && links.length) {
+        const cats = {};
+        links.forEach(l=>{const c=l.category||'misc';if(!cats[c])cats[c]=[];cats[c].push(l);});
+        mc.innerHTML = Object.entries(cats).map(([cat,ls])=>`<div class="links-category-header">${esc(cat)}</div><div class="links-list">${ls.map(l=>`<div class="link-item"><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>${l.description?`<div class="link-desc">${esc(l.description)}</div>`:''}</div>`).join('')}</div>`).join('');
+      } else { mc.innerHTML = '<div class="empty-notice">No links yet.</div>'; }
+    } else {
+      // posts (life, studies, home, etc.)
+      const {data: posts} = await db.from('posts').select('*,tab:tabs(name,slug)').eq('tab_id',tab.id).eq('published',true).neq('status','hidden').order('pinned',{ascending:false}).order('created_at',{ascending:false}).limit(20);
+      mc.innerHTML = posts && posts.length ? posts.map(p=>renderPostCard(p)).join('<div style="border-top:1px dashed var(--border);margin:8px 0 28px;"></div>') : '<div class="empty-notice">No posts yet — check back soon!</div>';
+    }
+    return;
+  }
+  document.getElementById('main-content').innerHTML = '';
+  for (const section of sections) {
+    await renderSection(section, slug);
+  }
 }
-boot();
-</script>
 
-<script>
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  if (lb && img) { img.src = src; lb.classList.add('open'); }
+}
+document.getElementById('lightbox-close')?.addEventListener('click', ()=>document.getElementById('lightbox').classList.remove('open'));
+document.getElementById('lightbox')?.addEventListener('click', e=>{ if(e.target===document.getElementById('lightbox')) document.getElementById('lightbox').classList.remove('open'); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('lightbox')?.classList.remove('open'); });
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const btn = document.getElementById('theme-toggle');
+  if(btn){
+    const update = ()=>{ const cur=document.documentElement.getAttribute('data-theme'); btn.textContent=cur==='dark'?'☀ light':'☾ dark'; };
+    update();
+    btn.addEventListener('click',()=>{
+      const cur=document.documentElement.getAttribute('data-theme');
+      const next=cur==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme',next);
+      localStorage.setItem('theme',next);
+      update();
+    });
+  }
+});
+
 (function(){
   var FONT2_KEY='rf2active',seq='',target='nese',active=sessionStorage.getItem(FONT2_KEY)==='1';
   function applyFont(on){ document.documentElement.setAttribute('data-font2',on?'1':'0'); sessionStorage.setItem(FONT2_KEY,on?'1':'0'); }
@@ -660,6 +782,8 @@ boot();
   });
   if(active) applyFont(true);
 })();
+
+boot();
 </script>
 </body>
 </html>
