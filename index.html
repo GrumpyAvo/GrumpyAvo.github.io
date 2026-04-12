@@ -191,32 +191,21 @@
       background:#1c1530; color:#ede8f7; border-color:#3d2a5e;
     }
 
+    .section-loading{padding:40px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;}
+    .empty-notice{padding:32px 0;color:var(--muted);font-size:14px;font-style:italic;}
   </style>
-<script>
-  (function() {
-    var saved = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', saved);
-    document.addEventListener('DOMContentLoaded', function() {
-      var btn = document.getElementById('theme-toggle');
-      if (btn) {
-        btn.textContent = saved === 'dark' ? '☀ light' : '☾ dark';
-        btn.addEventListener('click', function() {
-          var cur = document.documentElement.getAttribute('data-theme');
-          var next = cur === 'dark' ? 'light' : 'dark';
-          document.documentElement.setAttribute('data-theme', next);
-          localStorage.setItem('theme', next);
-          btn.textContent = next === 'dark' ? '☀ light' : '☾ dark';
-        });
-      }
-    });
-  })();
-</script>
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
 </head>
 <body>
 
 <div class="marquee-bar">
-  <div class="marquee-inner" id="marquee-text">
-    ★ WELCOME TO RICARDO'S CORNER OF THE INTERNET ★ &nbsp;&nbsp;&nbsp; currently: existing and thinking too much &nbsp;&nbsp;&nbsp; ✦ updated: whenever i feel like it ✦ &nbsp;&nbsp;&nbsp; reading something interesting, as always &nbsp;&nbsp;&nbsp; ★ WELCOME TO RICARDO'S CORNER OF THE INTERNET ★ &nbsp;&nbsp;&nbsp; currently: existing and thinking too much &nbsp;&nbsp;&nbsp; ✦ updated: whenever i feel like it ✦ &nbsp;&nbsp;&nbsp; reading something interesting, as always &nbsp;&nbsp;&nbsp;
+  <div class="marquee-inner">
+    ★ WELCOME TO RICARDO'S CORNER OF THE INTERNET ★ &nbsp;&nbsp;&nbsp; currently: existing and thinking too much &nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;&nbsp; ✦ updated: whenever i feel like it ✦ &nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;&nbsp; reading something interesting, as always &nbsp;&nbsp;&nbsp; ★ WELCOME TO RICARDO'S CORNER OF THE INTERNET ★ &nbsp;&nbsp;&nbsp; currently: existing and thinking too much &nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;&nbsp; ✦ updated: whenever i feel like it ✦ &nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;&nbsp; reading something interesting, as always &nbsp;&nbsp;&nbsp;
   </div>
 </div>
 
@@ -246,9 +235,7 @@
 <div class="layout">
   <main>
     <div class="feed-header"><h2>★ latest posts</h2></div>
-    <div id="latest-posts-feed">
-      <div style="color:var(--muted);font-style:italic;font-size:13px">loading posts…</div>
-    </div>
+    <div id="latest-posts-feed"><div class="section-loading">loading…</div></div>
   </main>
 
   <aside>
@@ -260,7 +247,7 @@
           <div class="avatar" style="overflow:hidden;padding:0;"><img src="me.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center 20%;" /></div>
           <div class="name">Hey, I'm Ricardo</div>
         </div>
-        <p id="about-widget-text" style="margin-top:8px">I like learning random things, reading, and playing games. Sometimes it's science, sometimes history, sometimes conspiracies, whatever weird topic I fell into at 2 a.m.</p>
+        <p style="margin-top:8px">I like learning random things, reading, and playing games. Sometimes it's science, sometimes history, sometimes conspiracies, whatever weird topic I fell into at 2 a.m.</p>
         <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:2">
           📍 South Africa<br/>
           📷 Kodak Ektar 35H · Voigtlander Bessa<br/>
@@ -275,7 +262,7 @@
     <div class="widget">
       <div class="widget-title"><span>◈</span> current status</div>
       <div class="widget-body" style="overflow:visible">
-        <div style="font-size:12px;margin-bottom:12px;padding:8px;background:var(--panel);border:1px dashed var(--border);font-style:italic" id="status-quote">
+        <div style="font-size:12px;margin-bottom:12px;padding:8px;background:var(--panel);border:1px dashed var(--border);font-style:italic">
           ""
           <span class="blink">|</span>
         </div>
@@ -309,22 +296,21 @@
     <!-- Recent Posts -->
     <div class="widget">
       <div class="widget-title"><span>↓</span> recent posts</div>
-      <div class="widget-body" id="recent-posts-sidebar">
-        <div style="font-size:12px;color:var(--muted);font-style:italic">loading…</div>
-      </div>
+      <div class="widget-body" id="recent-posts-sidebar"><div style="font-size:12px;color:var(--muted);font-style:italic">loading…</div></div>
     </div>
 
     <!-- Tags -->
     <div class="widget">
       <div class="widget-title"><span>#</span> tags</div>
       <div class="widget-body">
-        <div class="tag-cloud" id="tag-cloud-container">
+        <div class="tag-cloud">
           <a href="pics.html" class="tag big">pics</a>
           <a href="pics.html" class="tag">film</a>
           <a href="life.html" class="tag big">life</a>
           <a href="studies.html" class="tag">studies</a>
           <a href="books.html" class="tag big">books</a>
           <a href="pics.html" class="tag">photography</a>
+          <a href="pics.html" class="tag">kodak</a>
           <a href="life.html" class="tag">personal</a>
           <a href="life.html" class="tag">thoughts</a>
           <a href="books.html" class="tag">reading</a>
@@ -336,7 +322,7 @@
     <div class="widget">
       <div class="widget-title"><span>✉</span> guestbook</div>
       <div class="widget-body">
-        <div id="gb-preview" style="font-size:12px;color:var(--muted);font-style:italic"></div>
+        <div id="gb-sidebar-preview" style="font-size:12px;color:var(--muted);font-style:italic">loading…</div>
         <a href="guestbook.html" class="read-more" style="margin-top:10px;display:inline-block;font-size:10px">sign guestbook →</a>
       </div>
     </div>
@@ -352,10 +338,13 @@
   <div class="footer-badges">
     <span class="badge red">made by hand</span>
     <span class="badge green">no ads ever</span>
+    
     <span class="badge">best viewed with curiosity</span>
   </div>
-  <button class="dark-toggle" id="theme-toggle">☾ dark</button>
+<button class="dark-toggle" id="theme-toggle">☾ dark</button>
 </footer>
+
+
 
 <script>
 
@@ -814,92 +803,92 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(active)applyFont(true);
 })();
 
-// ── INDEX-SPECIFIC BOOT ─────────────────────────────────────────────────────
+// ── START ─────────────────────────────────────────────────────────────────────
+boot();
+
+
+// ── INDEX BOOT ───────────────────────────────────────────────────────────────
 async function boot() {
-  // Build nav dynamically
   buildNav('index');
-
-  // Load settings (marquee, tagline)
   loadSidebarData();
-
-  // Live Spotify now playing
-  const SPOTIFY_API = 'https://spotify-backend-lyart.vercel.app';
-  fetch(SPOTIFY_API + '/api/now-playing').catch(function(){});
-  setTimeout(loadNowPlaying, 800);
-  setInterval(loadNowPlaying, 10000);
-
-  // Hit counter
+  loadNowPlaying();
   loadHitCounter();
 
-  // Load latest posts feed (most recent 6 live posts across all tabs)
-  const {data: posts} = await db.from('posts')
-    .select('*,tab:tabs(name,slug)')
-    .eq('published', true)
-    .neq('status', 'hidden')
-    .order('pinned', {ascending: false})
-    .order('created_at', {ascending: false})
-    .limit(6);
-
-  const feed = document.getElementById('latest-posts-feed');
-  if (!posts || !posts.length) {
-    feed.innerHTML = '<div style="color:var(--muted);font-style:italic;font-size:13px">no posts yet — check back soon!</div>';
-  } else {
-    feed.innerHTML = posts.map((p, i) => {
-      const img = p.image_url
-        ? `<img src="${esc(p.image_url)}" alt="${esc(p.title)}" class="post-image" style="margin-top:12px" />`
-        : '';
-      const tagLabel = p.tab ? esc(p.tab.name) : 'post';
-      const href = p.tab ? p.tab.slug + '.html#post-' + p.id : '#post-' + p.id;
-      const excerpt = (p.excerpt || (p.content || '')).substring(0, 200) + '…';
-      const divider = i < posts.length - 1 ? '<div class="divider">✦ ✦ ✦</div>' : '';
-      return `
-        <article class="post" id="post-${esc(p.id)}">
-          <div class="post-tag">${tagLabel}</div>
-          ${img}
-          <div class="post-body">
-            <div class="post-meta"><span>${fmtDate(p.created_at)}</span></div>
-            <h2 class="post-title"><a href="${href}">${esc(p.title)}</a></h2>
-            ${p.subtitle ? `<div style="font-size:13px;color:var(--muted);margin-bottom:8px">${esc(p.subtitle)}</div>` : ''}
-            <p class="post-excerpt">${esc(excerpt)}</p>
-            <a href="${href}" class="read-more">keep reading →</a>
-          </div>
-        </article>${divider}`;
-    }).join('');
-  }
-
-  // Settings: status quote + marquee
+  // Load settings for marquee + status
   const cfg = await loadSettings();
-  if (cfg.site_tagline) {
-    const q = document.getElementById('status-quote');
-    if (q) q.innerHTML = `"${esc(cfg.site_tagline)}" <span class="blink">|</span>`;
-  }
   if (cfg.marquee_text) {
     const t = esc(cfg.marquee_text) + ' &nbsp;&nbsp;&nbsp; ';
     const m = document.getElementById('marquee-text');
     if (m) m.innerHTML = t + t;
   }
+  if (cfg.site_tagline) {
+    const el = document.getElementById('status-text');
+    if (el) el.textContent = '"' + cfg.site_tagline + '"';
+  }
+
+  // Load recent posts across all tabs
+  const {data: posts} = await db.from('posts')
+    .select('*,tab:tabs(name,slug)')
+    .eq('published', true).neq('status','hidden')
+    .order('pinned', {ascending:false})
+    .order('created_at', {ascending:false})
+    .limit(6);
+
+  const feed = document.getElementById('latest-posts-feed');
+  if (!posts || !posts.length) {
+    feed.innerHTML = '<div class="empty-notice">no posts yet — check back soon!</div>';
+  } else {
+    feed.innerHTML = posts.map((p, i) => {
+      const divider = i < posts.length - 1 ? '<div class="divider">✦ ✦ ✦</div>' : '';
+      return renderPostCard(p) + divider;
+    }).join('');
+  }
 }
 
-boot();
-</script>
+function renderPostCard(p) {
+  const img = p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.title)}" class="post-image" style="margin-top:12px" />` : '';
+  const tagLabel = p.tab ? esc(p.tab.name) : 'post';
+  const href = p.tab ? p.tab.slug + '.html#post-' + p.id : '#post-' + p.id;
+  const excerpt = (p.excerpt || (p.content || '')).substring(0, 200) + '…';
+  return `<article class="post" id="post-${esc(p.id)}">
+    <div class="post-tag">${tagLabel}</div>
+    ${img}
+    <div class="post-body">
+      <div class="post-meta"><span>${fmtDate(p.created_at)}</span></div>
+      <h2 class="post-title"><a href="${href}">${esc(p.title)}</a></h2>
+      ${p.subtitle ? `<div style="font-size:13px;color:var(--muted);margin-bottom:8px">${esc(p.subtitle)}</div>` : ''}
+      <p class="post-excerpt">${esc(excerpt)}</p>
+      <a href="${href}" class="read-more">keep reading →</a>
+    </div>
+  </article>`;
+}
 
-<script>
-(function(){
-  var FONT2_KEY = 'rf2active';
-  var seq = '', target = 'nese';
-  var active = sessionStorage.getItem(FONT2_KEY) === '1';
-  function applyFont(on){
-    document.documentElement.setAttribute('data-font2', on ? '1' : '0');
-    sessionStorage.setItem(FONT2_KEY, on ? '1' : '0');
+document.addEventListener('DOMContentLoaded',()=>{
+  const btn=document.getElementById('theme-toggle');
+  if(btn){
+    const update=()=>{btn.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀ light':'☾ dark';};
+    update();
+    btn.addEventListener('click',()=>{
+      const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme',next);
+      localStorage.setItem('theme',next);
+      update();
+    });
   }
-  document.addEventListener('keydown', function(e){
-    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    seq += e.key.toLowerCase();
-    if(seq.length > target.length) seq = seq.slice(-target.length);
-    if(seq === target){ seq = ''; active = !active; applyFont(active); }
+});
+
+(function(){
+  var FONT2_KEY='rf2active',seq='',target='nese',active=sessionStorage.getItem(FONT2_KEY)==='1';
+  function applyFont(on){ document.documentElement.setAttribute('data-font2',on?'1':'0'); sessionStorage.setItem(FONT2_KEY,on?'1':'0'); }
+  document.addEventListener('keydown',function(e){
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+    seq+=e.key.toLowerCase(); if(seq.length>target.length) seq=seq.slice(-target.length);
+    if(seq===target){ seq=''; active=!active; applyFont(active); }
   });
   if(active) applyFont(true);
 })();
+
+boot();
 </script>
 </body>
 </html>
