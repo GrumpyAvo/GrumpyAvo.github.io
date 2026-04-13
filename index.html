@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>★ Ricardo's Corner ★</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inconsolata:wght@400;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -191,15 +190,34 @@
       background:#1c1530; color:#ede8f7; border-color:#3d2a5e;
     }
 
+    body.loading>*:not(script):not(style){opacity:0;transition:opacity 0.15s;}body.ready>*{opacity:1;}
+    
+  body.loading>*:not(script):not(style){opacity:0;transition:opacity 0.15s;}body.ready>*{opacity:1;}
+  .global-search-wrap{display:flex;gap:0;align-items:center;margin-left:auto;}
+  .global-search-input{background:rgba(255,255,255,0.08);border:1px solid var(--border);padding:7px 14px;font-family:'Inconsolata',monospace;font-size:13px;color:var(--cream);outline:none;width:200px;transition:border-color 0.15s;}
+  .global-search-input:focus{border-color:var(--accent1);}
+  .global-search-input::placeholder{color:var(--muted);}
+  .global-search-btn{background:var(--dark);border:1px solid var(--border);border-left:none;color:var(--accent3);padding:7px 12px;cursor:pointer;font-size:14px;}
+  .global-search-btn:hover{background:var(--accent1);border-color:var(--accent1);}
+  #search-results-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,8,20,0.9);z-index:9000;padding:80px 40px 40px;overflow-y:auto;}
+  #search-results-overlay.open{display:block;}
+  .search-overlay-inner{max-width:700px;margin:0 auto;}
+  .search-overlay-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+  .search-overlay-title{font-family:'Blowpis','Syne',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,0.4);}
+  .search-overlay-close{background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;}
+  .search-overlay-close:hover{color:white;}
+  .search-result-item{border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);padding:14px 18px;margin-bottom:10px;}
+  .search-result-item:hover{background:rgba(139,63,200,0.15);border-color:rgba(139,63,200,0.4);}
+  .search-result-item a{text-decoration:none;color:white;display:block;}
+  .search-result-title{font-weight:600;font-size:14px;margin-bottom:3px;}
+  .search-result-meta{font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.08em;}
+  .search-result-excerpt{font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px;line-height:1.5;}
+  .search-no-results{text-align:center;padding:40px;color:rgba(255,255,255,0.3);font-style:italic;}
+
     .section-loading{padding:40px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;}
     .empty-notice{padding:32px 0;color:var(--muted);font-size:14px;font-style:italic;}
   </style>
-  <script>
-    (function() {
-      var saved = localStorage.getItem('theme') || 'light';
-      document.documentElement.setAttribute('data-theme', saved);
-    })();
-  </script>
+  <script>(function(){var s=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',s);})();</script>
 </head>
 <body>
 
@@ -218,10 +236,23 @@
     <div class="hit-counter" id="hit-counter-display"></div>
     <div style="margin-top:8px;font-size:10px;color:var(--muted)">you are visitor <strong style="color:var(--dark)" id="visitor-num">—</strong></div>
   </div>
+<div class="global-search-wrap">
+  <input class="global-search-input" id="global-search-input" placeholder="search site…" autocomplete="off" onkeydown="if(event.key==='Enter')runGlobalSearch()" />
+  <button class="global-search-btn" onclick="runGlobalSearch()">🔍</button>
+</div>
+<div id="search-results-overlay">
+  <div class="search-overlay-inner">
+    <div class="search-overlay-header">
+      <span class="search-overlay-title" id="search-overlay-label">search results</span>
+      <button class="search-overlay-close" onclick="closeSearch()">✕</button>
+    </div>
+    <div id="search-results-body"></div>
+  </div>
+</div>
 </header>
 
 <nav id="site-nav">
-  <a href="index.html" class="active">home</a>
+  <a href="index.html">home</a>
   <a href="about.html">about</a>
   <a href="life.html">life</a>
   <a href="pics.html">pics</a>
@@ -235,7 +266,7 @@
 <div class="layout">
   <main>
     <div class="feed-header"><h2>★ latest posts</h2></div>
-    <div id="latest-posts-feed"><div class="section-loading">loading…</div></div>
+    <div id="latest-posts-feed"><div style="color:var(--muted);font-style:italic;font-size:13px">loading…</div></div>
   </main>
 
   <aside>
@@ -296,7 +327,8 @@
     <!-- Recent Posts -->
     <div class="widget">
       <div class="widget-title"><span>↓</span> recent posts</div>
-      <div class="widget-body" id="recent-posts-sidebar"><div style="font-size:12px;color:var(--muted);font-style:italic">loading…</div></div>
+      <div class="widget-body" id="recent-posts-sidebar"><div style="font-size:12px;color:var(--muted);font-style:italic">loading…</div>
+      </div>
     </div>
 
     <!-- Tags -->
@@ -322,7 +354,7 @@
     <div class="widget">
       <div class="widget-title"><span>✉</span> guestbook</div>
       <div class="widget-body">
-        <div id="gb-sidebar-preview" style="font-size:12px;color:var(--muted);font-style:italic">loading…</div>
+        <div id="gb-sidebar-preview" style="font-size:12px;color:var(--muted);font-style:italic"></div>
         <a href="guestbook.html" class="read-more" style="margin-top:10px;display:inline-block;font-size:10px">sign guestbook →</a>
       </div>
     </div>
@@ -345,549 +377,90 @@
 </footer>
 
 
-
 <script>
-
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-const SUPABASE_URL = 'https://wzvmdpkiwwfhnisjudeo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op';
-const SPOTIFY_API  = 'https://spotify-backend-lyart.vercel.app';
-
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ── ROUTING ───────────────────────────────────────────────────────────────────
-// Determines which page slug we're on.
-// Works whether the file is named page.html?slug=life OR life.html
-function currentSlug(){
-  const params = new URLSearchParams(location.search);
-  if(params.get('slug')) return params.get('slug');
-  // fallback: derive from filename
-  const file = location.pathname.split('/').pop().replace('.html','');
-  if(!file || file==='page') return 'index';
-  return file;
-}
-
-// ── UTILS ─────────────────────────────────────────────────────────────────────
+const SUPABASE_URL='https://wzvmdpkiwwfhnisjudeo.supabase.co';
+const SUPABASE_KEY='sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op';
+const SPOTIFY_API='https://spotify-backend-lyart.vercel.app';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtDate(s){return s?new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';}
-function stars(n){return n?'★'.repeat(n)+'☆'.repeat(5-n):'—';}
-
-// Tiny Markdown → HTML (headings, bold, italic, links, paragraphs)
-function md(text){
-  if(!text) return '';
-  return text
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2">$1</a>')
-    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
-    .replace(/`(.+?)`/g,'<code>$1</code>')
-    .replace(/\n\n/g,'</p><p>')
-    .replace(/^/,'<p>').replace(/$/,'</p>')
-    .replace(/<p>(<h[123]>)/g,'$1').replace(/(<\/h[123]>)<\/p>/g,'$1')
-    .replace(/<p>(<blockquote>)/g,'$1').replace(/(<\/blockquote>)<\/p>/g,'$1');
+async function runGlobalSearch(){
+  const q=(document.getElementById('global-search-input')?.value||'').trim();
+  if(!q)return;
+  const overlay=document.getElementById('search-results-overlay');
+  const body=document.getElementById('search-results-body');
+  const label=document.getElementById('search-overlay-label');
+  overlay.classList.add('open');
+  body.innerHTML='<div class="search-no-results">searching…</div>';
+  if(label)label.textContent='results for "'+q+'"';
+  const [{data:posts},{data:books}]=await Promise.all([
+    db.from('posts').select('*,tab:tabs(name,slug)').eq('published',true).ilike('title','%'+q+'%').limit(8),
+    db.from('books').select('*').eq('status','published').or('title.ilike.%'+q+'%,author.ilike.%'+q+'%').limit(6)
+  ]);
+  const results=[];
+  (posts||[]).forEach(p=>{const href=p.tab?p.tab.slug+'.html#post-'+p.id:'#';results.push({title:p.title,meta:(p.tab?.name||'post')+' · '+fmtDate(p.created_at),excerpt:p.excerpt||'',href});});
+  (books||[]).forEach(b=>{results.push({title:b.title,meta:'book · '+(b.author||''),excerpt:b.review?b.review.substring(0,100)+'…':'',href:'books.html'});});
+  if(!results.length){body.innerHTML='<div class="search-no-results">no results for "'+esc(q)+'"</div>';return;}
+  body.innerHTML=results.map(r=>`<div class="search-result-item"><a href="${esc(r.href)}"><div class="search-result-title">${esc(r.title)}</div><div class="search-result-meta">${esc(r.meta)}</div>${r.excerpt?`<div class="search-result-excerpt">${esc(r.excerpt)}</div>`:''}</a></div>`).join('');
 }
-
-// ── BOOT ──────────────────────────────────────────────────────────────────────
-async function boot(){
-  const slug = currentSlug();
-
-  // Run nav, settings, sidebar in parallel — don't block page render
-  buildNav(slug);
-  loadSidebarData();
-  loadNowPlaying();
-  loadHitCounter();
-
-  // Load the page's sections
-  const {data: tab} = await db.from('tabs').select('*').eq('slug', slug).single();
-  if(!tab){
-    document.getElementById('main-content').innerHTML = '<div class="empty-notice">Page not found.</div>';
-    return;
-  }
-
-  document.title = tab.name + ' · white';
-  document.getElementById('page-title').textContent = tab.name + ' · white';
-
-  const {data: sections} = await db
-    .from('sections')
-    .select('*')
-    .eq('tab_id', tab.id)
-    .eq('visible', true)
-    .order('order');
-
-  if(!sections || !sections.length){
-    document.getElementById('main-content').innerHTML = '<div class="empty-notice">Nothing here yet — check back soon.</div>';
-    return;
-  }
-
-  document.getElementById('main-content').innerHTML = '';
-  for(const section of sections){
-    await renderSection(section, slug);
-  }
+function closeSearch(){document.getElementById('search-results-overlay')?.classList.remove('open');const inp=document.getElementById('global-search-input');if(inp)inp.value='';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSearch();});
+function renderPostCard(p){
+  const img=p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.title)}" class="post-image" style="margin-top:12px" />`:'';
+  const tagLabel=p.tab?esc(p.tab.name):'post';
+  const href=p.tab?p.tab.slug+'.html#post-'+p.id:'#post-'+p.id;
+  const excerpt=(p.excerpt||(p.content||'')).substring(0,200)+'…';
+  return `<article class="post" id="post-${esc(p.id)}"><div class="post-tag">${tagLabel}</div>${img}<div class="post-body"><div class="post-meta"><span>${fmtDate(p.created_at)}</span></div><h2 class="post-title"><a href="${href}">${esc(p.title)}</a></h2>${p.subtitle?`<div style="font-size:13px;color:var(--muted);margin-bottom:8px">${esc(p.subtitle)}</div>`:''}<p class="post-excerpt">${esc(excerpt)}</p><a href="${href}" class="read-more">keep reading →</a></div></article>`;
 }
-
-// ── NAV ───────────────────────────────────────────────────────────────────────
-async function buildNav(activeSlug){
-  const {data} = await db.from('tabs').select('name,slug,visible').eq('visible',true).order('order');
-  if(!data) return;
-  const nav = document.getElementById('site-nav');
-  nav.innerHTML = data.map(t => {
-    const href = t.slug === 'index' ? 'index.html' : t.slug + '.html';
-    const active = t.slug === activeSlug ? ' class="active"' : '';
-    return `<a href="${href}"${active}>${esc(t.name)}</a>`;
-  }).join('');
+async function buildNav(active){
+  const {data}=await db.from('tabs').select('name,slug,visible').eq('visible',true).order('order');
+  if(!data)return;
+  const nav=document.getElementById('site-nav');if(!nav)return;
+  nav.innerHTML=data.map(t=>{const href=t.slug==='index'?'index.html':t.slug+'.html';return `<a href="${href}"${t.slug===active?' class="active"':''}">${esc(t.name)}</a>`;}).join('');
 }
-
-// ── SETTINGS ─────────────────────────────────────────────────────────────────
-async function loadSettings(){
-  const {data} = await db.from('site_settings').select('*');
-  if(!data) return {};
-  return Object.fromEntries(data.map(r=>[r.key,r.value]));
-}
-
-// ── SIDEBAR DATA ──────────────────────────────────────────────────────────────
-async function loadSidebarData(){
-  const cfg = await loadSettings();
-
-  // Marquee
-  if(cfg.marquee_text){
-    const t = esc(cfg.marquee_text)+' &nbsp;&nbsp;&nbsp; ';
-    document.getElementById('marquee-text').innerHTML = t+t;
-  }
-
-  // Site tagline in about widget
-  if(cfg.site_tagline){
-    document.getElementById('about-widget-text').textContent = cfg.site_tagline;
-  }
-
-  // Recent posts sidebar
-  const {data:posts} = await db.from('posts').select('*,tab:tabs(name,slug)')
-    .eq('published',true).neq('status','hidden')
-    .order('created_at',{ascending:false}).limit(3);
-  const rp = document.getElementById('recent-posts-sidebar');
-  if(posts && posts.length){
-    rp.innerHTML = posts.map((p,i)=>`
-      <a href="${p.tab?p.tab.slug+'.html':'index.html'}#post-${p.id}" class="recent-post">
-        <span class="rp-num">0${i+1}</span>
-        <div><div class="rp-title">${esc(p.title)}</div><div class="rp-date">${fmtDate(p.created_at)}</div></div>
-      </a>`).join('');
-  } else {
-    rp.innerHTML = '<div style="font-size:12px;color:var(--muted);font-style:italic">no posts yet</div>';
-  }
-
-  // Guestbook preview
-  const {data:gb} = await db.from('guestbook_entries').select('*')
-    .eq('status','approved').order('created_at',{ascending:false}).limit(1);
-  const gbPrev = document.getElementById('gb-sidebar-preview');
-  if(gb && gb.length){
-    const g = gb[0];
-    gbPrev.innerHTML = `<strong style="font-size:12px">${esc(g.name)}</strong><div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:2px">"${esc(g.message.substring(0,70))}${g.message.length>70?'…':''}"</div>`;
-  }
-}
-
-// ── HIT COUNTER ───────────────────────────────────────────────────────────────
-async function loadHitCounter(){
-  try{
-    const res = await fetch(SPOTIFY_API+'/api/visitors?page='+currentSlug(),{cache:'no-store'});
-    if(!res.ok) return;
-    const data = await res.json();
-    const count = data.count??data.visitors??data.total??0;
-    const display = document.getElementById('hit-counter-display');
-    if(display) display.innerHTML = String(count).padStart(6,'0').split('').map(d=>`<span>${d}</span>`).join('');
-    const vnum = document.getElementById('visitor-num');
-    if(vnum) vnum.textContent = '#'+count;
-  } catch(e){}
-}
-
-// ── NOW PLAYING ───────────────────────────────────────────────────────────────
 async function loadNowPlaying(){
   try{
-    const res = await fetch(SPOTIFY_API+'/api/now-playing');
-    const data = await res.json();
-    const title  = document.getElementById('np-title');
-    const artist = document.getElementById('np-artist');
-    const status = document.getElementById('np-status');
-    const art    = document.getElementById('np-art');
-    if(!title) return;
-    if(data.isPlaying){
-      title.textContent  = data.title;
-      artist.textContent = data.artist;
-      status.innerHTML   = '<span style="color:var(--accent1)">▶</span> playing now';
-      if(data.albumArt) art.innerHTML = `<img src="${data.albumArt}" style="width:44px;height:44px;object-fit:cover;display:block;" />`;
-    } else {
-      title.textContent  = 'not playing';
-      artist.textContent = '—';
-      status.textContent = '◈ offline';
-    }
-  } catch(e){
-    const t = document.getElementById('np-title');
-    if(t) t.textContent = 'unavailable';
-  }
+    const r=await fetch(SPOTIFY_API+'/api/now-playing');
+    const d=await r.json();
+    const title=document.getElementById('np-title');
+    const artist=document.getElementById('np-artist');
+    const status=document.getElementById('np-status');
+    const art=document.getElementById('np-art');
+    if(!title)return;
+    if(d.isPlaying){title.textContent=d.title;artist.textContent=d.artist;status.innerHTML='<span style="color:var(--accent1)">▶</span> playing now';if(d.albumArt&&art)art.innerHTML=`<img src="${d.albumArt}" style="width:44px;height:44px;object-fit:cover;display:block;border:1px solid var(--border);" />`; }
+    else{title.textContent='not playing';artist.textContent='—';if(status)status.textContent='◈ offline';}
+  }catch(e){const t=document.getElementById('np-title');if(t)t.textContent='unavailable';}
 }
-// Poll every 10s
-setTimeout(loadNowPlaying, 800);
-setInterval(loadNowPlaying, 10000);
-
-// ── SECTION RENDERER ─────────────────────────────────────────────────────────
-async function renderSection(section, pageSlug){
-  const main = document.getElementById('main-content');
-  const cfg  = section.config || {};
-
-  // Optional section heading
-  let headerHtml = '';
-  if(section.title){
-    headerHtml = `<div class="feed-header"><h2>${esc(section.title)}</h2></div>`;
-  }
-
-  const wrap = document.createElement('div');
-  wrap.id = 'section-'+section.id;
-  wrap.innerHTML = headerHtml + '<div class="section-loading">loading…</div>';
-  main.appendChild(wrap);
-
-  let html = '';
-
-  switch(section.type){
-
-    // ── HERO ────────────────────────────────────────────────────────────────
-    case 'hero': {
-      html = `<div class="hero-section">
-        <h1>${esc(cfg.subtitle||'welcome.')}</h1>
-        ${cfg.body?`<div class="text-block hero-sub">${md(cfg.body)}</div>`:''}
-      </div>`;
-      break;
-    }
-
-    // ── POSTS ───────────────────────────────────────────────────────────────
-    case 'posts': {
-      let query = db.from('posts').select('*,tab:tabs(name,slug)')
-        .eq('published',true).neq('status','hidden')
-        .order(cfg.pinned_first?'pinned':'created_at',{ascending:false});
-      if(cfg.tag)    query = query.contains('tags',[cfg.tag]);
-      if(!cfg.tag){
-        // Default: show posts for this page's tab
-        const {data:tab} = await db.from('tabs').select('id').eq('slug',pageSlug).single();
-        if(tab) query = query.eq('tab_id',tab.id);
-      }
-      query = query.limit(cfg.limit||10);
-      const {data:posts} = await query;
-      if(!posts||!posts.length){
-        html = '<div class="empty-notice">No posts yet — check back soon!</div>';
-      } else {
-        html = posts.map(p => renderPostCard(p)).join('');
-      }
-      break;
-    }
-
-    // ── BOOKS ───────────────────────────────────────────────────────────────
-    case 'books': {
-      let query = db.from('books').select('*').eq('status','published');
-      if(cfg.sort==='rating_desc') query = query.order('rating',{ascending:false});
-      else query = query.order('created_at',{ascending:false});
-      query = query.limit(cfg.limit||24);
-      const {data:books} = await query;
-      if(!books||!books.length){
-        html = '<div class="empty-notice">No books here yet.</div>';
-      } else {
-        html = `<div class="books-grid">`+books.map(b=>`
-          <div class="book-card">
-            ${b.cover_url
-              ? `<img class="book-cover" src="${esc(b.cover_url)}" alt="${esc(b.title)}" />`
-              : `<div class="book-cover-placeholder">📚</div>`}
-            <div class="book-info">
-              <div class="book-title-text">${esc(b.title)}</div>
-              <div class="book-author">${esc(b.author)}</div>
-              ${b.rating?`<div class="book-stars">${stars(b.rating)}</div>`:''}
-              ${b.year_read?`<div style="font-size:10px;color:var(--muted);margin-top:4px">${b.year_read}</div>`:''}
-            </div>
-          </div>`).join('')+`</div>`;
-      }
-      break;
-    }
-
-    // ── PHOTOS ──────────────────────────────────────────────────────────────
-    case 'photos': {
-      let query = db.from('photos').select('*').eq('visible',true);
-      if(cfg.album) query = query.eq('album',cfg.album);
-      query = query.order('order').limit(cfg.limit||48);
-      const {data:photos} = await query;
-      if(!photos||!photos.length){
-        html = '<div class="empty-notice">No photos yet.</div>';
-      } else {
-        html = `<div class="photos-grid">`+photos.map(p=>`
-          <div class="photo-item">
-            <img src="${esc(p.url)}" alt="${esc(p.alt_text||p.caption||'')}" loading="lazy" />
-            ${p.caption?`<div class="photo-caption">${esc(p.caption)}</div>`:''}
-          </div>`).join('')+`</div>`;
-      }
-      break;
-    }
-
-    // ── MUSIC ───────────────────────────────────────────────────────────────
-    case 'music': {
-      let query = db.from('music').select('*').eq('status','published');
-      if(cfg.type) query = query.eq('type',cfg.type);
-      query = query.order('created_at',{ascending:false}).limit(cfg.limit||24);
-      const {data:tracks} = await query;
-      if(!tracks||!tracks.length){
-        html = '<div class="empty-notice">Nothing here yet.</div>';
-      } else {
-        html = `<div class="music-grid">`+tracks.map(t=>`
-          <div class="music-card">
-            ${t.cover_url
-              ? `<img class="music-cover" src="${esc(t.cover_url)}" alt="${esc(t.title)}" />`
-              : `<div class="music-cover-ph">♪</div>`}
-            <div class="music-info">
-              <div class="music-title-text">${esc(t.title)}</div>
-              <div class="music-artist">${esc(t.artist)}</div>
-              <div class="music-type">${esc(t.type)}</div>
-              ${t.rating?`<div style="color:#f59e0b;font-size:12px;margin-top:4px">${'★'.repeat(t.rating)}</div>`:''}
-            </div>
-          </div>`).join('')+`</div>`;
-      }
-      break;
-    }
-
-    // ── LINKS ───────────────────────────────────────────────────────────────
-    case 'links': {
-      let query = db.from('links').select('*').eq('visible',true);
-      if(cfg.category) query = query.eq('category',cfg.category);
-      query = query.order('order').limit(cfg.limit||100);
-      const {data:links} = await query;
-      if(!links||!links.length){
-        html = '<div class="empty-notice">No links yet.</div>';
-      } else {
-        // Group by category
-        const cats = {};
-        links.forEach(l=>{
-          const c = l.category||'misc';
-          if(!cats[c]) cats[c]=[];
-          cats[c].push(l);
-        });
-        html = Object.entries(cats).map(([cat,ls])=>`
-          <div class="links-category-header">${esc(cat)}</div>
-          <div class="links-list">${ls.map(l=>`
-            <div class="link-item">
-              <div><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a></div>
-              ${l.description?`<div class="link-desc">${esc(l.description)}</div>`:''}
-            </div>`).join('')}
-          </div>`).join('');
-      }
-      break;
-    }
-
-    // ── TEXT ─────────────────────────────────────────────────────────────────
-    case 'text': {
-      html = `<div class="text-block">${md(cfg.content||'')}</div>`;
-      break;
-    }
-
-    // ── GUESTBOOK ────────────────────────────────────────────────────────────
-    case 'guestbook': {
-      html = await renderGuestbook(cfg);
-      break;
-    }
-
-    default:
-      html = `<div class="empty-notice">Unknown section type: ${esc(section.type)}</div>`;
-  }
-
-  wrap.querySelector('.section-loading')?.remove();
-  wrap.insertAdjacentHTML('beforeend', html);
+async function boot(){
+  document.body.classList.add('loading');
+  await buildNav('index');
+  // Hit counter
+  try{const r=await fetch(SPOTIFY_API+'/api/visitors?page=home',{cache:'no-store'});if(r.ok){const d=await r.json();const count=d.count??d.visitors??0;const el=document.getElementById('hit-counter-display');if(el)el.innerHTML=String(count).padStart(6,'0').split('').map(x=>`<span>${x}</span>`).join('');const vn=document.getElementById('visitor-num');if(vn)vn.textContent='#'+count;}}catch(e){}
+  // Settings
+  const {data:settings}=await db.from('site_settings').select('*');
+  const cfg=Object.fromEntries((settings||[]).map(r=>[r.key,r.value]));
+  if(cfg.marquee_text){const t=esc(cfg.marquee_text)+' &nbsp;&nbsp;&nbsp; ';const m=document.getElementById('marquee-text');if(m)m.innerHTML=t+t;}
+  if(cfg.site_tagline){const el=document.getElementById('status-text');if(el)el.textContent='"'+cfg.site_tagline+'"';}
+  // Recent posts (sidebar)
+  const {data:recent}=await db.from('posts').select('*,tab:tabs(name,slug)').eq('published',true).neq('status','hidden').order('created_at',{ascending:false}).limit(3);
+  const rp=document.getElementById('recent-posts-sidebar');
+  if(rp)rp.innerHTML=recent&&recent.length?recent.map((p,i)=>`<a href="${p.tab?p.tab.slug+'.html#post-'+p.id:'#'}" class="recent-post"><span class="rp-num">0${i+1}</span><div><div class="rp-title">${esc(p.title)}</div><div class="rp-date">${fmtDate(p.created_at)}</div></div></a>`).join(''):'<div style="font-size:12px;color:var(--muted);font-style:italic">no posts yet</div>';
+  // Guestbook preview
+  const {data:gb}=await db.from('guestbook_entries').select('*').eq('status','approved').order('created_at',{ascending:false}).limit(1);
+  const gbPrev=document.getElementById('gb-sidebar-preview');
+  if(gbPrev&&gb&&gb.length){const g=gb[0];gbPrev.innerHTML=`<strong style="font-size:12px">${esc(g.name)}</strong><div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:2px">"${esc(g.message.substring(0,70))}${g.message.length>70?'…':''}"</div>`;}
+  // Latest posts (main feed)
+  const {data:posts}=await db.from('posts').select('*,tab:tabs(name,slug)').eq('published',true).neq('status','hidden').order('pinned',{ascending:false}).order('created_at',{ascending:false}).limit(6);
+  const feed=document.getElementById('latest-posts-feed');
+  if(feed)feed.innerHTML=posts&&posts.length?posts.map((p,i)=>renderPostCard(p)+(i<posts.length-1?'<div class="divider">✦ ✦ ✦</div>':'')).join(''):'<div class="empty-notice">no posts yet — check back soon!</div>';
+  // Spotify
+  fetch(SPOTIFY_API+'/api/now-playing').catch(function(){});
+  setTimeout(loadNowPlaying,800);
+  setInterval(loadNowPlaying,10000);
+  document.body.classList.replace('loading','ready');
 }
-
-// ── POST CARD ─────────────────────────────────────────────────────────────────
-function renderPostCard(p){
-  const img    = p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.title)}" class="post-image" style="margin-top:12px" />` : '';
-  const excerpt= (p.excerpt||(p.content||'')).substring(0,220)+'…';
-  const tags   = (p.tags||[]).slice(0,3).map(t=>`<span style="background:var(--panel);border:1px solid var(--border);font-size:10px;padding:2px 7px;margin-right:4px">${esc(t)}</span>`).join('');
-  const href   = p.tab ? p.tab.slug+'.html#post-'+p.id : '#post-'+p.id;
-  return `<article class="post" id="post-${esc(p.id)}">
-    <div class="post-tag">${esc(p.tab?.name||'post')}</div>
-    ${img}
-    <div class="post-body">
-      <div class="post-meta"><span>${fmtDate(p.created_at)}</span></div>
-      <h2 class="post-title"><a href="${href}">${esc(p.title)}</a></h2>
-      ${p.subtitle?`<div style="font-size:13px;color:var(--muted);margin-bottom:8px">${esc(p.subtitle)}</div>`:''}
-      <p class="post-excerpt">${esc(excerpt)}</p>
-      ${tags?`<div style="margin-bottom:14px">${tags}</div>`:''}
-      <a href="${href}" class="read-more">keep reading →</a>
-    </div>
-  </article>`;
-}
-
-// ── GUESTBOOK SECTION ────────────────────────────────────────────────────────
-async function renderGuestbook(cfg){
-  const cfg2   = await loadSettings();
-  const open   = cfg.form_open !== 'false' && cfg2.guestbook_open !== 'false';
-  const limit  = cfg.limit || 20;
-
-  const {data:entries} = await db.from('guestbook_entries')
-    .select('*').eq('status','approved')
-    .order('created_at',{ascending:false}).limit(limit);
-
-  const formHtml = open ? `
-    <div class="gb-form" id="gb-form-wrap">
-      <h3>leave a message</h3>
-      <div class="form-group"><label>Name *</label><input type="text" id="gb-name" maxlength="80" /></div>
-      <div class="form-group"><label>Message *</label><textarea id="gb-msg" rows="4" maxlength="500"></textarea></div>
-      <div class="form-group"><label>Website <span style="opacity:0.5;font-size:9px">(optional)</span></label><input type="text" id="gb-website" maxlength="200" placeholder="https://…" /></div>
-      <button class="gb-submit" id="gb-submit-btn" onclick="submitGuestbook()">Send Message</button>
-      <div id="gb-form-feedback"></div>
-    </div>` : `<div class="gb-closed">The guestbook is currently closed. Check back later.</div>`;
-
-  const entriesHtml = entries&&entries.length
-    ? `<div class="feed-header" style="margin-top:8px"><h2>★ messages</h2></div>
-       <div class="gb-entries">`+entries.map(g=>`
-        <div class="gb-entry-card">
-          <div class="gb-name">${esc(g.name)}${g.website?` <a href="${esc(g.website)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--accent2);font-weight:400;margin-left:6px">↗</a>`:''}</div>
-          <div class="gb-date">${fmtDate(g.created_at)}</div>
-          <div class="gb-message">${esc(g.message)}</div>
-        </div>`).join('')+`</div>`
-    : '<div class="empty-notice">No messages yet. Be the first!</div>';
-
-  return formHtml + entriesHtml;
-}
-
-async function submitGuestbook(){
-  const name    = document.getElementById('gb-name')?.value.trim();
-  const message = document.getElementById('gb-msg')?.value.trim();
-  const website = document.getElementById('gb-website')?.value.trim();
-  const fb      = document.getElementById('gb-form-feedback');
-  const btn     = document.getElementById('gb-submit-btn');
-  if(!name||!message){fb.innerHTML='<div class="gb-msg-err">Name and message are required.</div>';return;}
-  btn.disabled=true; btn.textContent='Sending…';
-  const {error} = await db.from('guestbook_entries').insert({name,message,website:website||null,status:'pending'});
-  btn.disabled=false; btn.textContent='Send Message';
-  if(error){fb.innerHTML=`<div class="gb-msg-err">Error: ${esc(error.message)}</div>`;return;}
-  document.getElementById('gb-name').value='';
-  document.getElementById('gb-msg').value='';
-  document.getElementById('gb-website').value='';
-  fb.innerHTML='<div class="gb-msg-ok">Message sent! It\'ll appear once approved. Thanks ✦</div>';
-}
-
-// ── DARK MODE ─────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
-  const btn = document.getElementById('theme-toggle');
-  if(btn){
-    const update = ()=>{
-      const cur = document.documentElement.getAttribute('data-theme');
-      btn.textContent = cur==='dark' ? '☀ light' : '☾ dark';
-    };
-    update();
-    btn.addEventListener('click',()=>{
-      const cur = document.documentElement.getAttribute('data-theme');
-      const next = cur==='dark'?'light':'dark';
-      document.documentElement.setAttribute('data-theme',next);
-      localStorage.setItem('theme',next);
-      update();
-    });
-  }
-});
-
-// ── SECRET FONT (type "nese") ─────────────────────────────────────────────────
-(function(){
-  var seq='',target='nese',active=sessionStorage.getItem('rf2active')==='1';
-  function applyFont(on){
-    document.documentElement.setAttribute('data-font2',on?'1':'0');
-    sessionStorage.setItem('rf2active',on?'1':'0');
-  }
-  document.addEventListener('keydown',function(e){
-    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
-    seq+=e.key.toLowerCase();
-    if(seq.length>target.length)seq=seq.slice(-target.length);
-    if(seq===target){seq='';active=!active;applyFont(active);}
-  });
-  if(active)applyFont(true);
-})();
-
-// ── START ─────────────────────────────────────────────────────────────────────
-boot();
-
-
-// ── INDEX BOOT ───────────────────────────────────────────────────────────────
-async function boot() {
-  buildNav('index');
-  loadSidebarData();
-  loadNowPlaying();
-  loadHitCounter();
-
-  // Load settings for marquee + status
-  const cfg = await loadSettings();
-  if (cfg.marquee_text) {
-    const t = esc(cfg.marquee_text) + ' &nbsp;&nbsp;&nbsp; ';
-    const m = document.getElementById('marquee-text');
-    if (m) m.innerHTML = t + t;
-  }
-  if (cfg.site_tagline) {
-    const el = document.getElementById('status-text');
-    if (el) el.textContent = '"' + cfg.site_tagline + '"';
-  }
-
-  // Load recent posts across all tabs
-  const {data: posts} = await db.from('posts')
-    .select('*,tab:tabs(name,slug)')
-    .eq('published', true).neq('status','hidden')
-    .order('pinned', {ascending:false})
-    .order('created_at', {ascending:false})
-    .limit(6);
-
-  const feed = document.getElementById('latest-posts-feed');
-  if (!posts || !posts.length) {
-    feed.innerHTML = '<div class="empty-notice">no posts yet — check back soon!</div>';
-  } else {
-    feed.innerHTML = posts.map((p, i) => {
-      const divider = i < posts.length - 1 ? '<div class="divider">✦ ✦ ✦</div>' : '';
-      return renderPostCard(p) + divider;
-    }).join('');
-  }
-}
-
-function renderPostCard(p) {
-  const img = p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.title)}" class="post-image" style="margin-top:12px" />` : '';
-  const tagLabel = p.tab ? esc(p.tab.name) : 'post';
-  const href = p.tab ? p.tab.slug + '.html#post-' + p.id : '#post-' + p.id;
-  const excerpt = (p.excerpt || (p.content || '')).substring(0, 200) + '…';
-  return `<article class="post" id="post-${esc(p.id)}">
-    <div class="post-tag">${tagLabel}</div>
-    ${img}
-    <div class="post-body">
-      <div class="post-meta"><span>${fmtDate(p.created_at)}</span></div>
-      <h2 class="post-title"><a href="${href}">${esc(p.title)}</a></h2>
-      ${p.subtitle ? `<div style="font-size:13px;color:var(--muted);margin-bottom:8px">${esc(p.subtitle)}</div>` : ''}
-      <p class="post-excerpt">${esc(excerpt)}</p>
-      <a href="${href}" class="read-more">keep reading →</a>
-    </div>
-  </article>`;
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-  const btn=document.getElementById('theme-toggle');
-  if(btn){
-    const update=()=>{btn.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀ light':'☾ dark';};
-    update();
-    btn.addEventListener('click',()=>{
-      const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
-      document.documentElement.setAttribute('data-theme',next);
-      localStorage.setItem('theme',next);
-      update();
-    });
-  }
-});
-
-(function(){
-  var FONT2_KEY='rf2active',seq='',target='nese',active=sessionStorage.getItem(FONT2_KEY)==='1';
-  function applyFont(on){ document.documentElement.setAttribute('data-font2',on?'1':'0'); sessionStorage.setItem(FONT2_KEY,on?'1':'0'); }
-  document.addEventListener('keydown',function(e){
-    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
-    seq+=e.key.toLowerCase(); if(seq.length>target.length) seq=seq.slice(-target.length);
-    if(seq===target){ seq=''; active=!active; applyFont(active); }
-  });
-  if(active) applyFont(true);
-})();
-
+document.addEventListener('DOMContentLoaded',function(){var btn=document.getElementById('theme-toggle');if(!btn)return;var upd=function(){btn.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀ light':'☾ dark';};upd();btn.addEventListener('click',function(){var next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);localStorage.setItem('theme',next);upd();});});
+(function(){var k='rf2active',seq='',tgt='nese',on=sessionStorage.getItem(k)==='1';function ap(v){document.documentElement.setAttribute('data-font2',v?'1':'0');sessionStorage.setItem(k,v?'1':'0');}document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;seq+=e.key.toLowerCase();if(seq.length>tgt.length)seq=seq.slice(-tgt.length);if(seq===tgt){seq='';on=!on;ap(on);}});if(on)ap(true);})();
 boot();
 </script>
 </body>
