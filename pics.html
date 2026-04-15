@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pics · white</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inconsolata:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inconsolata:wght@400;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     @font-face {
@@ -71,6 +70,8 @@
     .page-wrap { max-width:1000px; margin:0 auto; padding:40px; }
     .page-title { font-family:'SupremeDonuts',serif; font-weight:800; font-size:2.2rem; letter-spacing:-0.02em; margin-bottom:8px; }
     .page-subtitle { color:var(--muted); font-size:13px; margin-bottom:36px; }
+    .album-tab{background:none;border:1.5px solid var(--border);padding:5px 14px;font-family:'Inconsolata',monospace;font-size:11px;cursor:pointer;color:var(--dark);letter-spacing:0.08em;transition:all 0.15s;}
+    .album-tab:hover,.album-tab.active{background:var(--accent1);color:white;border-color:var(--accent1);}
     /* Masonry gallery */
     .gallery { columns:3; column-gap:12px; margin-top:8px; }
     .gallery img { width:100%; display:block; margin-bottom:12px; border:1.5px solid var(--dark); box-shadow:2px 2px 0 var(--dark); break-inside:avoid; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
@@ -119,90 +120,81 @@
       background:#1c1530; color:#ede8f7; border-color:#3d2a5e;
     }
   
-    /* ── shared post/section styles ── */
-    .post{margin-bottom:32px;border:1.5px solid var(--dark);background:white;position:relative;transition:transform 0.2s,box-shadow 0.2s;box-shadow:3px 3px 0 var(--dark);}
+    
+    /* hide body until boot completes to prevent static flash */
+    body.loading > *:not(script):not(style){opacity:0;transition:opacity 0.15s;}
+    body.ready > *{opacity:1;}
+    .post{margin-bottom:32px;border:1.5px solid var(--dark);background:white;position:relative;transition:transform .2s,box-shadow .2s;box-shadow:3px 3px 0 var(--dark);}
     .post:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dark);}
     .post-tag{position:absolute;top:-11px;left:16px;z-index:10;background:var(--accent1);color:white;font-family:'Blowpis','Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;padding:3px 10px;}
     .post-image{width:100%;height:220px;object-fit:cover;display:block;border-bottom:1.5px solid var(--dark);}
     .post-body{padding:20px 22px 22px;}
     .post-meta{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);}
     .post-title{font-family:'Syne',serif;font-weight:800;font-size:1.2rem;line-height:1.2;margin-bottom:10px;}
-    .post-title a{text-decoration:none;color:inherit;}
-    .post-title a:hover{color:var(--accent1);}
+    .post-title a{text-decoration:none;color:inherit;}.post-title a:hover{color:var(--accent1);}
     .post-excerpt{color:#4a3d60;font-size:14px;line-height:1.65;margin-bottom:16px;}
     .read-more{display:inline-block;font-family:'Blowpis','Syne',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--dark);text-decoration:none;border:1.5px solid var(--dark);padding:6px 14px;}
     .read-more:hover{background:var(--accent1);color:white;border-color:var(--accent1);}
-    .feed-header{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
-    .feed-header h2{font-family:'Blowpis','Syne',sans-serif;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);}
-    .feed-header::after{content:'';flex:1;height:1px;background:var(--border);}
     .books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px;padding-top:8px;}
-    .book-card{border:1.5px solid var(--dark);background:white;box-shadow:3px 3px 0 var(--dark);transition:transform .2s,box-shadow .2s;}
-    .book-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dark);}
+    .book-card{border:1.5px solid var(--dark);background:white;box-shadow:3px 3px 0 var(--dark);transition:transform .2s,box-shadow .2s;}.book-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dark);}
     .book-cover{width:100%;height:200px;object-fit:cover;border-bottom:1.5px solid var(--dark);display:block;}
     .book-cover-placeholder{width:100%;height:200px;background:var(--panel);border-bottom:1.5px solid var(--dark);display:flex;align-items:center;justify-content:center;font-size:40px;}
-    .book-info{padding:10px 12px;}
-    .book-title-text{font-family:'Syne',serif;font-weight:700;font-size:13px;line-height:1.3;margin-bottom:4px;}
-    .book-author{font-size:11px;color:var(--muted);margin-bottom:4px;}
-    .book-stars{color:#f59e0b;font-size:13px;}
+    .book-info{padding:10px 12px;}.book-title-text{font-family:'Syne',serif;font-weight:700;font-size:13px;line-height:1.3;margin-bottom:4px;}.book-author{font-size:11px;color:var(--muted);margin-bottom:4px;}.book-stars{color:#f59e0b;font-size:13px;}
     .photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
     .photo-item{border:1.5px solid var(--dark);overflow:hidden;aspect-ratio:4/3;position:relative;cursor:pointer;}
-    .photo-item img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(10%) contrast(1.05);transition:filter .3s,transform .3s;}
-    .photo-item:hover img{filter:sepia(0%) contrast(1);transform:scale(1.03);}
-    .photo-caption{position:absolute;bottom:0;left:0;right:0;background:rgba(26,18,40,.8);color:var(--cream);font-size:11px;padding:6px 10px;transform:translateY(100%);transition:transform .2s;}
-    .photo-item:hover .photo-caption{transform:translateY(0);}
+    .photo-item img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(10%) contrast(1.05);transition:filter .3s,transform .3s;}.photo-item:hover img{filter:none;transform:scale(1.03);}
+    .photo-caption{position:absolute;bottom:0;left:0;right:0;background:rgba(26,18,40,.85);color:var(--cream);font-size:11px;padding:6px 10px;transform:translateY(100%);transition:transform .2s;}.photo-item:hover .photo-caption{transform:translateY(0);}
     .music-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;}
-    .music-card{border:1.5px solid var(--dark);background:white;box-shadow:3px 3px 0 var(--dark);transition:transform .2s;}
-    .music-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dark);}
+    .music-card{border:1.5px solid var(--dark);background:white;box-shadow:3px 3px 0 var(--dark);transition:transform .2s;}.music-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--dark);}
     .music-cover{width:100%;height:170px;object-fit:cover;display:block;border-bottom:1.5px solid var(--dark);}
     .music-cover-ph{width:100%;height:170px;background:var(--dark);display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1.5px solid var(--dark);}
-    .music-info{padding:10px 12px;}
-    .music-title-text{font-family:'Syne',serif;font-weight:700;font-size:13px;margin-bottom:2px;}
-    .music-artist{font-size:11px;color:var(--muted);}
-    .music-type{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent1);margin-top:4px;}
-    .links-list{display:flex;flex-direction:column;gap:10px;}
-    .link-item{border:1px solid var(--border);padding:12px 16px;background:white;}
-    .link-item a{font-weight:600;text-decoration:none;color:var(--dark);}
-    .link-item a:hover{color:var(--accent1);}
-    .link-desc{font-size:12px;color:var(--muted);margin-top:3px;}
-    .links-category-header{font-family:'Blowpis','Syne',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin:24px 0 12px;display:flex;align-items:center;gap:12px;}
-    .links-category-header::after{content:'';flex:1;height:1px;background:var(--border);}
-    .gb-form{background:white;border:1.5px solid var(--dark);box-shadow:3px 3px 0 var(--dark);padding:24px;margin-bottom:32px;}
-    .gb-form h3{font-family:'Syne',serif;font-weight:700;font-size:1rem;margin-bottom:16px;}
-    .form-group{margin-bottom:14px;}
-    .form-group label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--accent1);margin-bottom:6px;}
-    .form-group input,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);background:var(--cream);color:var(--dark);font-family:inherit;font-size:14px;outline:none;transition:border-color .15s;}
-    .form-group input:focus,.form-group textarea:focus{border-color:var(--accent1);}
-    .gb-submit{background:var(--accent1);border:none;color:white;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.15em;padding:10px 24px;cursor:pointer;}
-    .gb-submit:hover{opacity:.85;}
-    .gb-entries{display:flex;flex-direction:column;gap:16px;}
-    .gb-entry-card{border:1.5px solid var(--dark);background:white;box-shadow:2px 2px 0 var(--dark);padding:18px 20px;}
-    .gb-name{font-family:'Syne',serif;font-weight:700;font-size:14px;margin-bottom:2px;}
-    .gb-date{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}
-    .gb-message{font-size:14px;line-height:1.6;color:#4a3d60;}
+    .music-info{padding:10px 12px;}.music-title-text{font-weight:700;font-size:13px;margin-bottom:2px;}.music-artist{font-size:11px;color:var(--muted);}.music-type{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent1);margin-top:4px;}
+    .links-list{display:flex;flex-direction:column;gap:10px;}.link-item{border:1px solid var(--border);padding:12px 16px;background:white;}.link-item a{font-weight:600;text-decoration:none;color:var(--dark);}.link-item a:hover{color:var(--accent1);}.link-desc{font-size:12px;color:var(--muted);margin-top:3px;}
+    .links-category-header{font-family:'Blowpis','Syne',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin:24px 0 12px;display:flex;align-items:center;gap:12px;}.links-category-header::after{content:'';flex:1;height:1px;background:var(--border);}
+    .gb-form{background:white;border:1.5px solid var(--dark);box-shadow:3px 3px 0 var(--dark);padding:24px;margin-bottom:32px;}.gb-form h3{font-family:'Syne',serif;font-weight:700;font-size:1rem;margin-bottom:16px;}
+    .form-group{margin-bottom:14px;}.form-group label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--accent1);margin-bottom:6px;}
+    .form-group input,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);background:var(--cream);color:var(--dark);font-family:inherit;font-size:14px;outline:none;transition:border-color .15s;}.form-group input:focus,.form-group textarea:focus{border-color:var(--accent1);}
+    .gb-submit{background:var(--accent1);border:none;color:white;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.15em;padding:10px 24px;cursor:pointer;}.gb-submit:hover{opacity:.85;}
+    .gb-entries{display:flex;flex-direction:column;gap:16px;}.gb-entry-card{border:1.5px solid var(--dark);background:white;box-shadow:2px 2px 0 var(--dark);padding:18px 20px;}.gb-name{font-family:'Syne',serif;font-weight:700;font-size:14px;margin-bottom:2px;}.gb-date{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}.gb-message{font-size:14px;line-height:1.6;color:#4a3d60;}
     .gb-msg-ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.4);color:#065f46;padding:10px 14px;font-size:13px;margin-top:12px;}
-    .gb-msg-err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#991b1b;padding:10px 14px;font-size:13px;margin-top:12px;}
-    .gb-closed{padding:16px;background:var(--panel);border:1px solid var(--border);font-size:14px;color:var(--muted);margin-bottom:24px;font-style:italic;}
-    .text-block{font-size:15px;line-height:1.8;color:#3a2d55;max-width:680px;}
-    .text-block h1,.text-block h2,.text-block h3{font-family:'Syne',serif;margin:1.4rem 0 .6rem;line-height:1.2;}
-    .text-block p{margin-bottom:1rem;}
-    .text-block a{color:var(--accent1);}
-    .text-block blockquote{border-left:3px solid var(--accent1);padding-left:1rem;color:var(--muted);margin:1rem 0;}
+    .gb-msg-err,.gb-closed{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#991b1b;padding:10px 14px;font-size:13px;margin-top:12px;}
+    .text-block{font-size:15px;line-height:1.8;color:#3a2d55;max-width:680px;}.text-block h1,.text-block h2,.text-block h3{font-family:'Syne',serif;margin:1.4rem 0 .6rem;}.text-block p{margin-bottom:1rem;}.text-block a{color:var(--accent1);}.text-block blockquote{border-left:3px solid var(--accent1);padding-left:1rem;color:var(--muted);margin:1rem 0;}
     .section-loading{padding:40px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;}
     .empty-notice{padding:32px 0;color:var(--muted);font-size:14px;font-style:italic;}
-    #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center;}
+    #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;align-items:center;justify-content:center;}
     #lightbox.open{display:flex;}
     #lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;}
-    #lightbox-close{position:fixed;top:20px;right:24px;color:white;font-size:28px;cursor:pointer;z-index:10000;line-height:1;}
+    #lightbox-close{position:fixed;top:20px;right:24px;color:white;font-size:28px;cursor:pointer;z-index:10000;line-height:1;background:none;border:none;}
     [data-theme="dark"] .post,[data-theme="dark"] .book-card,[data-theme="dark"] .music-card,[data-theme="dark"] .link-item,[data-theme="dark"] .gb-form,[data-theme="dark"] .gb-entry-card{background:#261d3d !important;}
     [data-theme="dark"] .post-excerpt,[data-theme="dark"] .gb-message,[data-theme="dark"] .text-block{color:#c9bfe0;}
     [data-theme="dark"] .form-group input,[data-theme="dark"] .form-group textarea{background:#1c1530;color:#ede8f7;border-color:#3d2f5e;}
+    [data-theme="dark"] .link-item{background:#261d3d !important;}
+    .feed-header{display:flex;align-items:center;gap:12px;margin-bottom:28px;}.feed-header h2{font-family:'Blowpis','Syne',sans-serif;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);}.feed-header::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    
+  .global-search-wrap{display:flex;gap:0;align-items:center;margin-left:auto;}
+  .global-search-input{background:rgba(255,255,255,0.08);border:1px solid var(--border);padding:7px 14px;font-family:'Inconsolata',monospace;font-size:13px;color:var(--cream);outline:none;width:220px;transition:border-color 0.15s;}
+  .global-search-input:focus{border-color:var(--accent1);}
+  .global-search-input::placeholder{color:var(--muted);}
+  .global-search-btn{background:var(--dark);border:1px solid var(--border);border-left:none;color:var(--accent3);padding:7px 12px;cursor:pointer;font-size:14px;}
+  .global-search-btn:hover{background:var(--accent1);border-color:var(--accent1);}
+  #search-results-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,8,20,0.9);z-index:9000;padding:80px 40px 40px;overflow-y:auto;}
+  #search-results-overlay.open{display:block;}
+  .search-overlay-inner{max-width:700px;margin:0 auto;}
+  .search-overlay-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+  .search-overlay-title{font-family:'Blowpis','Syne',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,0.4);}
+  .search-overlay-close{background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;}
+  .search-overlay-close:hover{color:white;}
+  .search-result-item{border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);padding:14px 18px;margin-bottom:10px;}
+  .search-result-item:hover{background:rgba(139,63,200,0.15);border-color:rgba(139,63,200,0.4);}
+  .search-result-item a{text-decoration:none;color:white;display:block;}
+  .search-result-title{font-weight:600;font-size:14px;margin-bottom:3px;}
+  .search-result-meta{font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.08em;}
+  .search-result-excerpt{font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px;line-height:1.5;}
+  .search-no-results{text-align:center;padding:40px;color:rgba(255,255,255,0.3);font-style:italic;}
+
   </style>
-  <script>
-    (function() {
-      var saved = localStorage.getItem('theme') || 'light';
-      document.documentElement.setAttribute('data-theme', saved);
-    })();
-  </script>
+  <script>(function(){var s=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',s);})();</script>
 </head>
 <body>
 <div class="marquee-bar">
@@ -213,12 +205,25 @@
     
     <a href="index.html">white</a>
   </div>
+<div class="global-search-wrap">
+  <input class="global-search-input" id="global-search-input" placeholder="search site…" autocomplete="off" onkeydown="if(event.key==='Enter')runGlobalSearch()" />
+  <button class="global-search-btn" onclick="runGlobalSearch()">🔍</button>
+</div>
+<div id="search-results-overlay">
+  <div class="search-overlay-inner">
+    <div class="search-overlay-header">
+      <span class="search-overlay-title" id="search-overlay-label">search results</span>
+      <button class="search-overlay-close" onclick="closeSearch()">✕</button>
+    </div>
+    <div id="search-results-body"></div>
+  </div>
+</div>
 </header>
 <nav id="site-nav">
   <a href="index.html">home</a>
   <a href="about.html">about</a>
   <a href="life.html">life</a>
-  <a href="pics.html" class="active">pics</a>
+  <a href="pics.html">pics</a>
   <a href="books.html">book reviews</a>
   <a href="studies.html">studies</a>
   <a href="music.html">music</a>
@@ -230,7 +235,7 @@
 <div class="page-wrap">
   <div class="page-title" id="pics-main-title">📷 pics</div>
   <div class="page-subtitle">photos i've taken. mostly film. mostly moments i wanted to keep.</div>
-  <div id="main-content" style="margin-top:24px"><div class="section-loading">loading…</div></div>
+  <div id="page-main-content"><div class="section-loading">loading…</div></div>
 </div>
 
 <footer>
@@ -240,559 +245,198 @@
   </div>
   <div style="display:flex;align-items:center;gap:16px;"><a href="index.html">← back home</a> <button class="dark-toggle" id="theme-toggle">☾ dark</button></div>
 </footer>
-
-<div id="lightbox"><span id="lightbox-close">✕</span><img id="lightbox-img" src="" alt="" /></div>
-
+<div id="lightbox">
+  <button id="lightbox-close">✕</button>
+  <button id="lb-prev" onclick="lbNav(-1)" style="position:fixed;left:20px;top:50%;transform:translateY(-50%);font-size:32px;color:white;background:none;border:none;cursor:pointer;opacity:0.7;z-index:10001;">‹</button>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <img id="lightbox-img" src="" alt="" />
+    <div id="lb-caption-row" style="display:flex;align-items:center;gap:20px;">
+      <span id="lb-counter" style="color:rgba(255,255,255,0.4);font-size:12px;font-family:'Inconsolata',monospace;"></span>
+      <span id="lightbox-caption" style="color:rgba(255,255,255,0.7);font-size:13px;font-family:'Inconsolata',monospace;"></span>
+    </div>
+  </div>
+  <button id="lb-next" onclick="lbNav(1)" style="position:fixed;right:20px;top:50%;transform:translateY(-50%);font-size:32px;color:white;background:none;border:none;cursor:pointer;opacity:0.7;z-index:10001;">›</button>
+</div>
 <script>
-
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-const SUPABASE_URL = 'https://wzvmdpkiwwfhnisjudeo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op';
-const SPOTIFY_API  = 'https://spotify-backend-lyart.vercel.app';
-
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ── ROUTING ───────────────────────────────────────────────────────────────────
-// Determines which page slug we're on.
-// Works whether the file is named page.html?slug=life OR life.html
-function currentSlug(){
-  const params = new URLSearchParams(location.search);
-  if(params.get('slug')) return params.get('slug');
-  // fallback: derive from filename
-  const file = location.pathname.split('/').pop().replace('.html','');
-  if(!file || file==='page') return 'index';
-  return file;
-}
-
-// ── UTILS ─────────────────────────────────────────────────────────────────────
+const SUPABASE_URL='https://wzvmdpkiwwfhnisjudeo.supabase.co';
+const SUPABASE_KEY='sb_publishable_jxJuEEzH3qwVFLFaw22r3w_0034g6op';
+const SPOTIFY_API='https://spotify-backend-lyart.vercel.app';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtDate(s){return s?new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';}
-function stars(n){return n?'★'.repeat(n)+'☆'.repeat(5-n):'—';}
-
-// Tiny Markdown → HTML (headings, bold, italic, links, paragraphs)
-function md(text){
-  if(!text) return '';
-  return text
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2">$1</a>')
-    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
-    .replace(/`(.+?)`/g,'<code>$1</code>')
-    .replace(/\n\n/g,'</p><p>')
-    .replace(/^/,'<p>').replace(/$/,'</p>')
-    .replace(/<p>(<h[123]>)/g,'$1').replace(/(<\/h[123]>)<\/p>/g,'$1')
-    .replace(/<p>(<blockquote>)/g,'$1').replace(/(<\/blockquote>)<\/p>/g,'$1');
+function md(t){if(!t)return'';return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2">$1</a>').replace(/\n\n/g,'</p><p>').replace(/^/,'<p>').replace(/$/,'</p>');}
+const currentPage='pics';
+async function runGlobalSearch(){
+  const q=(document.getElementById('global-search-input')?.value||'').trim();
+  if(!q)return;
+  const overlay=document.getElementById('search-results-overlay');
+  const body=document.getElementById('search-results-body');
+  const label=document.getElementById('search-overlay-label');
+  overlay.classList.add('open');
+  body.innerHTML='<div class="search-no-results">searching…</div>';
+  if(label)label.textContent='results for "'+q+'"';
+  const [{data:posts},{data:books}]=await Promise.all([
+    db.from('posts').select('*,tab:tabs(name,slug)').eq('published',true).ilike('title','%'+q+'%').limit(8),
+    db.from('books').select('*').eq('status','published').or('title.ilike.%'+q+'%,author.ilike.%'+q+'%').limit(6)
+  ]);
+  const results=[];
+  (posts||[]).forEach(p=>{const href=p.tab?p.tab.slug+'.html#post-'+p.id:'#';results.push({title:p.title,meta:(p.tab?.name||'post')+' · '+fmtDate(p.created_at),excerpt:p.excerpt||'',href});});
+  (books||[]).forEach(b=>{results.push({title:b.title,meta:'book · '+(b.author||''),excerpt:b.review?b.review.substring(0,100)+'…':'',href:'books.html'});});
+  if(!results.length){body.innerHTML='<div class="search-no-results">no results for "'+esc(q)+'"</div>';return;}
+  body.innerHTML=results.map(r=>`<div class="search-result-item"><a href="${esc(r.href)}"><div class="search-result-title">${esc(r.title)}</div><div class="search-result-meta">${esc(r.meta)}</div>${r.excerpt?`<div class="search-result-excerpt">${esc(r.excerpt)}</div>`:''}</a></div>`).join('');
+}
+function closeSearch(){document.getElementById('search-results-overlay')?.classList.remove('open');const inp=document.getElementById('global-search-input');if(inp)inp.value='';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSearch();});
+async function buildNav(active){
+  const {data}=await db.from('tabs').select('name,slug,visible').eq('visible',true).order('order');
+  if(!data)return;
+  const nav=document.getElementById('site-nav');if(!nav)return;
+  nav.innerHTML=data.map(t=>{const href=t.slug==='index'?'index.html':t.slug+'.html';return `<a href="${href}"${t.slug===active?' class="active"':''}>${esc(t.name)}</a>`;}).join('');
+}
+async function loadHitCounter(page){
+  try{const r=await fetch(SPOTIFY_API+'/api/visitors?page='+page,{cache:'no-store'});if(!r.ok)return;const d=await r.json();const count=d.count??d.visitors??0;const el=document.getElementById('hit-counter-display');if(el)el.innerHTML=String(count).padStart(6,'0').split('').map(x=>`<span>${x}</span>`).join('');const vn=document.getElementById('visitor-num');if(vn)vn.textContent='#'+count;}catch(e){}
 }
 
-// ── BOOT ──────────────────────────────────────────────────────────────────────
-async function boot(){
-  const slug = currentSlug();
-
-  // Run nav, settings, sidebar in parallel — don't block page render
-  buildNav(slug);
-  loadSidebarData();
-  loadNowPlaying();
-  loadHitCounter();
-
-  // Load the page's sections
-  const {data: tab} = await db.from('tabs').select('*').eq('slug', slug).single();
-  if(!tab){
-    document.getElementById('main-content').innerHTML = '<div class="empty-notice">Page not found.</div>';
-    return;
-  }
-
-  document.title = tab.name + ' · white';
-  document.getElementById('page-title').textContent = tab.name + ' · white';
-
-  const {data: sections} = await db
-    .from('sections')
-    .select('*')
-    .eq('tab_id', tab.id)
-    .eq('visible', true)
-    .order('order');
-
-  if(!sections || !sections.length){
-    document.getElementById('main-content').innerHTML = '<div class="empty-notice">Nothing here yet — check back soon.</div>';
-    return;
-  }
-
-  document.getElementById('main-content').innerHTML = '';
-  for(const section of sections){
-    await renderSection(section, slug);
-  }
-}
-
-// ── NAV ───────────────────────────────────────────────────────────────────────
-async function buildNav(activeSlug){
-  const {data} = await db.from('tabs').select('name,slug,visible').eq('visible',true).order('order');
-  if(!data) return;
-  const nav = document.getElementById('site-nav');
-  nav.innerHTML = data.map(t => {
-    const href = t.slug === 'index' ? 'index.html' : t.slug + '.html';
-    const active = t.slug === activeSlug ? ' class="active"' : '';
-    return `<a href="${href}"${active}>${esc(t.name)}</a>`;
-  }).join('');
-}
-
-// ── SETTINGS ─────────────────────────────────────────────────────────────────
-async function loadSettings(){
-  const {data} = await db.from('site_settings').select('*');
-  if(!data) return {};
-  return Object.fromEntries(data.map(r=>[r.key,r.value]));
-}
-
-// ── SIDEBAR DATA ──────────────────────────────────────────────────────────────
-async function loadSidebarData(){
-  const cfg = await loadSettings();
-
-  // Marquee
-  if(cfg.marquee_text){
-    const t = esc(cfg.marquee_text)+' &nbsp;&nbsp;&nbsp; ';
-    document.getElementById('marquee-text').innerHTML = t+t;
-  }
-
-  // Site tagline in about widget
-  if(cfg.site_tagline){
-    document.getElementById('about-widget-text').textContent = cfg.site_tagline;
-  }
-
-  // Recent posts sidebar
-  const {data:posts} = await db.from('posts').select('*,tab:tabs(name,slug)')
-    .eq('published',true).neq('status','hidden')
-    .order('created_at',{ascending:false}).limit(3);
-  const rp = document.getElementById('recent-posts-sidebar');
-  if(posts && posts.length){
-    rp.innerHTML = posts.map((p,i)=>`
-      <a href="${p.tab?p.tab.slug+'.html':'index.html'}#post-${p.id}" class="recent-post">
-        <span class="rp-num">0${i+1}</span>
-        <div><div class="rp-title">${esc(p.title)}</div><div class="rp-date">${fmtDate(p.created_at)}</div></div>
-      </a>`).join('');
-  } else {
-    rp.innerHTML = '<div style="font-size:12px;color:var(--muted);font-style:italic">no posts yet</div>';
-  }
-
-  // Guestbook preview
-  const {data:gb} = await db.from('guestbook_entries').select('*')
-    .eq('status','approved').order('created_at',{ascending:false}).limit(1);
-  const gbPrev = document.getElementById('gb-sidebar-preview');
-  if(gb && gb.length){
-    const g = gb[0];
-    gbPrev.innerHTML = `<strong style="font-size:12px">${esc(g.name)}</strong><div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:2px">"${esc(g.message.substring(0,70))}${g.message.length>70?'…':''}"</div>`;
-  }
-}
-
-// ── HIT COUNTER ───────────────────────────────────────────────────────────────
-async function loadHitCounter(){
-  try{
-    const res = await fetch(SPOTIFY_API+'/api/visitors?page='+currentSlug(),{cache:'no-store'});
-    if(!res.ok) return;
-    const data = await res.json();
-    const count = data.count??data.visitors??data.total??0;
-    const display = document.getElementById('hit-counter-display');
-    if(display) display.innerHTML = String(count).padStart(6,'0').split('').map(d=>`<span>${d}</span>`).join('');
-    const vnum = document.getElementById('visitor-num');
-    if(vnum) vnum.textContent = '#'+count;
-  } catch(e){}
-}
-
-// ── NOW PLAYING ───────────────────────────────────────────────────────────────
-async function loadNowPlaying(){
-  try{
-    const res = await fetch(SPOTIFY_API+'/api/now-playing');
-    const data = await res.json();
-    const title  = document.getElementById('np-title');
-    const artist = document.getElementById('np-artist');
-    const status = document.getElementById('np-status');
-    const art    = document.getElementById('np-art');
-    if(!title) return;
-    if(data.isPlaying){
-      title.textContent  = data.title;
-      artist.textContent = data.artist;
-      status.innerHTML   = '<span style="color:var(--accent1)">▶</span> playing now';
-      if(data.albumArt) art.innerHTML = `<img src="${data.albumArt}" style="width:44px;height:44px;object-fit:cover;display:block;" />`;
-    } else {
-      title.textContent  = 'not playing';
-      artist.textContent = '—';
-      status.textContent = '◈ offline';
-    }
-  } catch(e){
-    const t = document.getElementById('np-title');
-    if(t) t.textContent = 'unavailable';
-  }
-}
-// Poll every 10s
-setTimeout(loadNowPlaying, 800);
-setInterval(loadNowPlaying, 10000);
-
-// ── SECTION RENDERER ─────────────────────────────────────────────────────────
-async function renderSection(section, pageSlug){
-  const main = document.getElementById('main-content');
-  const cfg  = section.config || {};
-
-  // Optional section heading
-  let headerHtml = '';
-  if(section.title){
-    headerHtml = `<div class="feed-header"><h2>${esc(section.title)}</h2></div>`;
-  }
-
-  const wrap = document.createElement('div');
-  wrap.id = 'section-'+section.id;
-  wrap.innerHTML = headerHtml + '<div class="section-loading">loading…</div>';
-  main.appendChild(wrap);
-
-  let html = '';
-
-  switch(section.type){
-
-    // ── HERO ────────────────────────────────────────────────────────────────
-    case 'hero': {
-      html = `<div class="hero-section">
-        <h1>${esc(cfg.subtitle||'welcome.')}</h1>
-        ${cfg.body?`<div class="text-block hero-sub">${md(cfg.body)}</div>`:''}
-      </div>`;
-      break;
-    }
-
-    // ── POSTS ───────────────────────────────────────────────────────────────
-    case 'posts': {
-      let query = db.from('posts').select('*,tab:tabs(name,slug)')
-        .eq('published',true).neq('status','hidden')
-        .order(cfg.pinned_first?'pinned':'created_at',{ascending:false});
-      if(cfg.tag)    query = query.contains('tags',[cfg.tag]);
-      if(!cfg.tag){
-        // Default: show posts for this page's tab
-        const {data:tab} = await db.from('tabs').select('id').eq('slug',pageSlug).single();
-        if(tab) query = query.eq('tab_id',tab.id);
-      }
-      query = query.limit(cfg.limit||10);
-      const {data:posts} = await query;
-      if(!posts||!posts.length){
-        html = '<div class="empty-notice">No posts yet — check back soon!</div>';
-      } else {
-        html = posts.map(p => renderPostCard(p)).join('');
-      }
-      break;
-    }
-
-    // ── BOOKS ───────────────────────────────────────────────────────────────
-    case 'books': {
-      let query = db.from('books').select('*').eq('status','published');
-      if(cfg.sort==='rating_desc') query = query.order('rating',{ascending:false});
-      else query = query.order('created_at',{ascending:false});
-      query = query.limit(cfg.limit||24);
-      const {data:books} = await query;
-      if(!books||!books.length){
-        html = '<div class="empty-notice">No books here yet.</div>';
-      } else {
-        html = `<div class="books-grid">`+books.map(b=>`
-          <div class="book-card">
-            ${b.cover_url
-              ? `<img class="book-cover" src="${esc(b.cover_url)}" alt="${esc(b.title)}" />`
-              : `<div class="book-cover-placeholder">📚</div>`}
-            <div class="book-info">
-              <div class="book-title-text">${esc(b.title)}</div>
-              <div class="book-author">${esc(b.author)}</div>
-              ${b.rating?`<div class="book-stars">${stars(b.rating)}</div>`:''}
-              ${b.year_read?`<div style="font-size:10px;color:var(--muted);margin-top:4px">${b.year_read}</div>`:''}
-            </div>
-          </div>`).join('')+`</div>`;
-      }
-      break;
-    }
-
-    // ── PHOTOS ──────────────────────────────────────────────────────────────
-    case 'photos': {
-      let query = db.from('photos').select('*').eq('visible',true);
-      if(cfg.album) query = query.eq('album',cfg.album);
-      query = query.order('order').limit(cfg.limit||48);
-      const {data:photos} = await query;
-      if(!photos||!photos.length){
-        html = '<div class="empty-notice">No photos yet.</div>';
-      } else {
-        html = `<div class="photos-grid">`+photos.map(p=>`
-          <div class="photo-item">
-            <img src="${esc(p.url)}" alt="${esc(p.alt_text||p.caption||'')}" loading="lazy" />
-            ${p.caption?`<div class="photo-caption">${esc(p.caption)}</div>`:''}
-          </div>`).join('')+`</div>`;
-      }
-      break;
-    }
-
-    // ── MUSIC ───────────────────────────────────────────────────────────────
-    case 'music': {
-      let query = db.from('music').select('*').eq('status','published');
-      if(cfg.type) query = query.eq('type',cfg.type);
-      query = query.order('created_at',{ascending:false}).limit(cfg.limit||24);
-      const {data:tracks} = await query;
-      if(!tracks||!tracks.length){
-        html = '<div class="empty-notice">Nothing here yet.</div>';
-      } else {
-        html = `<div class="music-grid">`+tracks.map(t=>`
-          <div class="music-card">
-            ${t.cover_url
-              ? `<img class="music-cover" src="${esc(t.cover_url)}" alt="${esc(t.title)}" />`
-              : `<div class="music-cover-ph">♪</div>`}
-            <div class="music-info">
-              <div class="music-title-text">${esc(t.title)}</div>
-              <div class="music-artist">${esc(t.artist)}</div>
-              <div class="music-type">${esc(t.type)}</div>
-              ${t.rating?`<div style="color:#f59e0b;font-size:12px;margin-top:4px">${'★'.repeat(t.rating)}</div>`:''}
-            </div>
-          </div>`).join('')+`</div>`;
-      }
-      break;
-    }
-
-    // ── LINKS ───────────────────────────────────────────────────────────────
-    case 'links': {
-      let query = db.from('links').select('*').eq('visible',true);
-      if(cfg.category) query = query.eq('category',cfg.category);
-      query = query.order('order').limit(cfg.limit||100);
-      const {data:links} = await query;
-      if(!links||!links.length){
-        html = '<div class="empty-notice">No links yet.</div>';
-      } else {
-        // Group by category
-        const cats = {};
-        links.forEach(l=>{
-          const c = l.category||'misc';
-          if(!cats[c]) cats[c]=[];
-          cats[c].push(l);
-        });
-        html = Object.entries(cats).map(([cat,ls])=>`
-          <div class="links-category-header">${esc(cat)}</div>
-          <div class="links-list">${ls.map(l=>`
-            <div class="link-item">
-              <div><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a></div>
-              ${l.description?`<div class="link-desc">${esc(l.description)}</div>`:''}
-            </div>`).join('')}
-          </div>`).join('');
-      }
-      break;
-    }
-
-    // ── TEXT ─────────────────────────────────────────────────────────────────
-    case 'text': {
-      html = `<div class="text-block">${md(cfg.content||'')}</div>`;
-      break;
-    }
-
-    // ── GUESTBOOK ────────────────────────────────────────────────────────────
-    case 'guestbook': {
-      html = await renderGuestbook(cfg);
-      break;
-    }
-
-    default:
-      html = `<div class="empty-notice">Unknown section type: ${esc(section.type)}</div>`;
-  }
-
-  wrap.querySelector('.section-loading')?.remove();
-  wrap.insertAdjacentHTML('beforeend', html);
-}
-
-// ── POST CARD ─────────────────────────────────────────────────────────────────
 function renderPostCard(p){
-  const img    = p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.title)}" class="post-image" style="margin-top:12px" />` : '';
-  const excerpt= (p.excerpt||(p.content||'')).substring(0,220)+'…';
-  const tags   = (p.tags||[]).slice(0,3).map(t=>`<span style="background:var(--panel);border:1px solid var(--border);font-size:10px;padding:2px 7px;margin-right:4px">${esc(t)}</span>`).join('');
-  const href   = p.tab ? p.tab.slug+'.html#post-'+p.id : '#post-'+p.id;
+  const img=p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.title)}" class="post-image" style="margin-top:12px" />`:'';
+  const tagLabel=p.tab?esc(p.tab.name):'post';
+  const href=p.tab?p.tab.slug+'.html#post-'+p.id:'#post-'+p.id;
+  const excerpt=(p.excerpt||(p.content||'')).substring(0,200)+'…';
   return `<article class="post" id="post-${esc(p.id)}">
-    <div class="post-tag">${esc(p.tab?.name||'post')}</div>
-    ${img}
+    <div class="post-tag">${tagLabel}</div>${img}
     <div class="post-body">
       <div class="post-meta"><span>${fmtDate(p.created_at)}</span></div>
       <h2 class="post-title"><a href="${href}">${esc(p.title)}</a></h2>
       ${p.subtitle?`<div style="font-size:13px;color:var(--muted);margin-bottom:8px">${esc(p.subtitle)}</div>`:''}
       <p class="post-excerpt">${esc(excerpt)}</p>
-      ${tags?`<div style="margin-bottom:14px">${tags}</div>`:''}
       <a href="${href}" class="read-more">keep reading →</a>
-    </div>
-  </article>`;
+    </div></article>`;
 }
 
-// ── GUESTBOOK SECTION ────────────────────────────────────────────────────────
-async function renderGuestbook(cfg){
-  const cfg2   = await loadSettings();
-  const open   = cfg.form_open !== 'false' && cfg2.guestbook_open !== 'false';
-  const limit  = cfg.limit || 20;
-
-  const {data:entries} = await db.from('guestbook_entries')
-    .select('*').eq('status','approved')
-    .order('created_at',{ascending:false}).limit(limit);
-
-  const formHtml = open ? `
-    <div class="gb-form" id="gb-form-wrap">
-      <h3>leave a message</h3>
-      <div class="form-group"><label>Name *</label><input type="text" id="gb-name" maxlength="80" /></div>
-      <div class="form-group"><label>Message *</label><textarea id="gb-msg" rows="4" maxlength="500"></textarea></div>
-      <div class="form-group"><label>Website <span style="opacity:0.5;font-size:9px">(optional)</span></label><input type="text" id="gb-website" maxlength="200" placeholder="https://…" /></div>
-      <button class="gb-submit" id="gb-submit-btn" onclick="submitGuestbook()">Send Message</button>
-      <div id="gb-form-feedback"></div>
-    </div>` : `<div class="gb-closed">The guestbook is currently closed. Check back later.</div>`;
-
-  const entriesHtml = entries&&entries.length
-    ? `<div class="feed-header" style="margin-top:8px"><h2>★ messages</h2></div>
-       <div class="gb-entries">`+entries.map(g=>`
-        <div class="gb-entry-card">
-          <div class="gb-name">${esc(g.name)}${g.website?` <a href="${esc(g.website)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--accent2);font-weight:400;margin-left:6px">↗</a>`:''}</div>
-          <div class="gb-date">${fmtDate(g.created_at)}</div>
-          <div class="gb-message">${esc(g.message)}</div>
-        </div>`).join('')+`</div>`
-    : '<div class="empty-notice">No messages yet. Be the first!</div>';
-
-  return formHtml + entriesHtml;
+async function renderPageContent(tabId,pageType,slug,container){
+  if(pageType==='books'){
+    const {data:books}=await db.from('books').select('*').eq('status','published').order('created_at',{ascending:false}).limit(48);
+    container.innerHTML=books&&books.length?'<div class="books-grid">'+books.map(b=>`<div class="book-card">${b.cover_url?`<img class="book-cover" src="${esc(b.cover_url)}" alt="${esc(b.title)}" />`:`<div class="book-cover-placeholder">📚</div>`}<div class="book-info"><div class="book-title-text">${esc(b.title)}</div><div class="book-author">${esc(b.author||'')}</div>${b.rating?`<div class="book-stars">${'★'.repeat(b.rating)}</div>`:''}</div></div>`).join('')+'</div>':'<div class="empty-notice">No books yet.</div>';
+  }else if(pageType==='photos'){
+    const {data:photos}=await db.from('photos').select('*').eq('visible',true).order('album').order('order').limit(500);
+    if(!photos||!photos.length){container.innerHTML='<div class="empty-notice">No photos yet.</div>';}
+    else{
+      window._lbPhotos=photos;
+      const albums=[...new Set(photos.filter(p=>p.album).map(p=>p.album))];
+      let html='';
+      if(albums.length>0){
+        html+=`<div id="album-tabs" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;">`;
+        html+=`<button class="album-tab active" data-album="all" onclick="filterAlbum('all')">all (${photos.length})</button>`;
+        albums.forEach(a=>{const c=photos.filter(p=>p.album===a).length;html+=`<button class="album-tab" data-album="${esc(a)}" onclick="filterAlbum('${esc(a)}')">${esc(a)} (${c})</button>`;});
+        html+=`</div>`;
+      }
+      html+=`<div class="gallery" id="gallery">`;
+      photos.forEach((p,i)=>{html+=`<img src="${esc(p.url)}" alt="${esc(p.caption||'')}" loading="lazy" data-idx="${i}" data-album="${esc(p.album||'')}" onclick="openLBIdx(${i})" title="${esc(p.caption||p.album||'')}" />`;});
+      html+=`</div>`;
+      container.innerHTML=html;
+    }
+  }else if(pageType==='music'){
+    const {data:tracks}=await db.from('music').select('*').eq('status','published').order('created_at',{ascending:false}).limit(48);
+    container.innerHTML=tracks&&tracks.length?'<div class="music-grid">'+tracks.map(t=>`<div class="music-card">${t.cover_url?`<img class="music-cover" src="${esc(t.cover_url)}" alt="${esc(t.title)}" />`:`<div class="music-cover-ph">♪</div>`}<div class="music-info"><div class="music-title-text">${esc(t.title)}</div><div class="music-artist">${esc(t.artist)}</div><div class="music-type">${esc(t.type||'')}</div>${t.rating?`<div style="color:#f59e0b">${'★'.repeat(t.rating)}</div>`:''}</div></div>`).join('')+'</div>':'<div class="empty-notice">No music yet.</div>';
+  }else if(pageType==='links'){
+    const {data:links}=await db.from('links').select('*').eq('visible',true).order('order').limit(200);
+    if(links&&links.length){const cats={};links.forEach(l=>{const c=l.category||'misc';if(!cats[c])cats[c]=[];cats[c].push(l);});container.innerHTML=Object.entries(cats).map(([cat,ls])=>`<div class="links-category-header">${esc(cat)}</div><div class="links-list">${ls.map(l=>`<div class="link-item"><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>${l.description?`<div class="link-desc">${esc(l.description)}</div>`:''}</div>`).join('')}</div>`).join('');}
+    else container.innerHTML='<div class="empty-notice">No links yet.</div>';
+  }else if(pageType==='guestbook'){
+    const {data:cfg2}=await db.from('site_settings').select('*');
+    const settingsMap=Object.fromEntries((cfg2||[]).map(r=>[r.key,r.value]));
+    const open=settingsMap.guestbook_open!=='false';
+    const {data:entries}=await db.from('guestbook_entries').select('*').eq('status','approved').order('created_at',{ascending:false}).limit(50);
+    const formHtml=open?`<div class="gb-form"><h3>leave a message</h3><div class="form-group"><label>Name *</label><input type="text" id="gb-name" maxlength="80" /></div><div class="form-group"><label>Message *</label><textarea id="gb-msg" rows="4" maxlength="500"></textarea></div><div class="form-group"><label>Website <span style="opacity:.5;font-size:9px">(optional)</span></label><input type="text" id="gb-website" maxlength="200" placeholder="https://…" /></div><button class="gb-submit" id="gb-submit-btn" onclick="submitGuestbook()">Send Message</button><div id="gb-form-feedback"></div></div>`:`<div class="gb-closed">The guestbook is currently closed.</div>`;
+    const entriesHtml=entries&&entries.length?'<div class="feed-header" style="margin-top:8px"><h2>★ messages</h2></div><div class="gb-entries">'+entries.map(g=>`<div class="gb-entry-card"><div class="gb-name">${esc(g.name)}${g.website?` <a href="${esc(g.website)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--accent2);font-weight:400;margin-left:6px">↗</a>`:''}</div><div class="gb-date">${fmtDate(g.created_at)}</div><div class="gb-message">${esc(g.message)}</div></div>`).join('')+'</div>':'<div class="empty-notice">No messages yet. Be the first!</div>';
+    container.innerHTML=formHtml+entriesHtml;
+  }else{
+    // posts (life, studies, etc.)
+    const {data:posts}=await db.from('posts').select('*,tab:tabs(name,slug)').eq('tab_id',tabId).eq('published',true).neq('status','hidden').order('pinned',{ascending:false}).order('created_at',{ascending:false}).limit(20);
+    container.innerHTML=posts&&posts.length?posts.map(p=>renderPostCard(p)).join('<div style="border-top:1px dashed var(--border);margin:8px 0 28px;"></div>'):'<div class="empty-notice">No posts yet — check back soon!</div>';
+  }
 }
 
 async function submitGuestbook(){
-  const name    = document.getElementById('gb-name')?.value.trim();
-  const message = document.getElementById('gb-msg')?.value.trim();
-  const website = document.getElementById('gb-website')?.value.trim();
-  const fb      = document.getElementById('gb-form-feedback');
-  const btn     = document.getElementById('gb-submit-btn');
-  if(!name||!message){fb.innerHTML='<div class="gb-msg-err">Name and message are required.</div>';return;}
-  btn.disabled=true; btn.textContent='Sending…';
-  const {error} = await db.from('guestbook_entries').insert({name,message,website:website||null,status:'pending'});
-  btn.disabled=false; btn.textContent='Send Message';
-  if(error){fb.innerHTML=`<div class="gb-msg-err">Error: ${esc(error.message)}</div>`;return;}
-  document.getElementById('gb-name').value='';
-  document.getElementById('gb-msg').value='';
-  document.getElementById('gb-website').value='';
-  fb.innerHTML='<div class="gb-msg-ok">Message sent! It\'ll appear once approved. Thanks ✦</div>';
+  const name=document.getElementById('gb-name')?.value.trim();
+  const message=document.getElementById('gb-msg')?.value.trim();
+  const website=document.getElementById('gb-website')?.value.trim();
+  const fb=document.getElementById('gb-form-feedback');
+  const btn=document.getElementById('gb-submit-btn');
+  if(!name||!message){if(fb)fb.innerHTML='<div class="gb-msg-err">Name and message are required.</div>';return;}
+  if(btn){btn.disabled=true;btn.textContent='Sending…';}
+  const {error}=await db.from('guestbook_entries').insert({name,message,website:website||null,status:'pending'});
+  if(btn){btn.disabled=false;btn.textContent='Send Message';}
+  if(error){if(fb)fb.innerHTML=`<div class="gb-msg-err">Error: ${esc(error.message)}</div>`;return;}
+  if(document.getElementById('gb-name'))document.getElementById('gb-name').value='';
+  if(document.getElementById('gb-msg'))document.getElementById('gb-msg').value='';
+  if(document.getElementById('gb-website'))document.getElementById('gb-website').value='';
+  if(fb)fb.innerHTML='<div class="gb-msg-ok">Message sent! It\'ll appear once approved ✦</div>';
 }
 
-// ── DARK MODE ─────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
-  const btn = document.getElementById('theme-toggle');
-  if(btn){
-    const update = ()=>{
-      const cur = document.documentElement.getAttribute('data-theme');
-      btn.textContent = cur==='dark' ? '☀ light' : '☾ dark';
-    };
-    update();
-    btn.addEventListener('click',()=>{
-      const cur = document.documentElement.getAttribute('data-theme');
-      const next = cur==='dark'?'light':'dark';
-      document.documentElement.setAttribute('data-theme',next);
-      localStorage.setItem('theme',next);
-      update();
-    });
-  }
-});
-
-// ── SECRET FONT (type "nese") ─────────────────────────────────────────────────
-(function(){
-  var seq='',target='nese',active=sessionStorage.getItem('rf2active')==='1';
-  function applyFont(on){
-    document.documentElement.setAttribute('data-font2',on?'1':'0');
-    sessionStorage.setItem('rf2active',on?'1':'0');
-  }
-  document.addEventListener('keydown',function(e){
-    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
-    seq+=e.key.toLowerCase();
-    if(seq.length>target.length)seq=seq.slice(-target.length);
-    if(seq===target){seq='';active=!active;applyFont(active);}
+window._lbPhotos=[];window._lbIdx=0;
+function openLBIdx(i){
+  const photos=window._lbPhotos;
+  if(!photos||!photos.length)return;
+  window._lbIdx=i;
+  const lb=document.getElementById('lightbox');
+  const img=document.getElementById('lightbox-img');
+  const cap=document.getElementById('lightbox-caption');
+  if(lb&&img){img.src=photos[i].url;if(cap)cap.textContent=photos[i].caption||'';lb.classList.add('open');}
+  updateLBNav();
+}
+function updateLBNav(){
+  const n=window._lbPhotos.length;
+  const prev=document.getElementById('lb-prev');
+  const next=document.getElementById('lb-next');
+  const counter=document.getElementById('lb-counter');
+  if(prev)prev.style.opacity=window._lbIdx>0?'1':'0.2';
+  if(next)next.style.opacity=window._lbIdx<n-1?'1':'0.2';
+  if(counter)counter.textContent=(window._lbIdx+1)+' / '+n;
+}
+function lbNav(dir){
+  const n=window._lbPhotos.length;
+  const ni=window._lbIdx+dir;
+  if(ni>=0&&ni<n)openLBIdx(ni);
+}
+function openLB(src){const i=window._lbPhotos.findIndex(p=>p.url===src);openLBIdx(i>=0?i:0);}
+function filterAlbum(album){
+  document.querySelectorAll('.album-tab').forEach(b=>b.classList.toggle('active',b.dataset.album===album));
+  document.querySelectorAll('#gallery img').forEach(img=>{
+    img.style.display=(album==='all'||img.dataset.album===album)?'block':'none';
   });
-  if(active)applyFont(true);
-})();
-
-// ── START ─────────────────────────────────────────────────────────────────────
-boot();
-
-// Override boot to use fixed slug
-async function boot() {
-  buildNav('pics');
-  loadSidebarData();
-  loadNowPlaying();
-  loadHitCounter();
-  const slug = 'pics';
-  const {data: tab} = await db.from('tabs').select('*').eq('slug', slug).single();
-  if (!tab) {
-    document.getElementById('main-content').innerHTML = '<div class="empty-notice">This page hasn\'t been set up yet.<br/><br/>Go to <a href="admin.html">Admin → Import Data</a> and click <strong>Import All</strong>, then come back.</div>';
-    return;
-  }
-  document.title = tab.name + ' · white';
-  const {data: sections} = await db.from('sections').select('*').eq('tab_id', tab.id).eq('visible', true).order('order');
-  if (!sections || !sections.length) {
-    // Fallback: query the right content directly
-    const t = tab.page_type;
-    const mc = document.getElementById('main-content');
-    if (t === 'books') {
-      const {data: books} = await db.from('books').select('*').eq('status','published').order('created_at',{ascending:false}).limit(48);
-      mc.innerHTML = books && books.length
-        ? `<div class="books-grid">${books.map(b=>`<div class="book-card">${b.cover_url?`<img class="book-cover" src="${esc(b.cover_url)}" alt="${esc(b.title)}" />`:`<div class="book-cover-placeholder">📚</div>`}<div class="book-info"><div class="book-title-text">${esc(b.title)}</div><div class="book-author">${esc(b.author||'')}</div>${b.rating?`<div class="book-stars">${'★'.repeat(b.rating)}</div>`:''}</div></div>`).join('')}</div>`
-        : '<div class="empty-notice">No books yet.</div>';
-    } else if (t === 'photos') {
-      const {data: photos} = await db.from('photos').select('*').eq('visible',true).order('order').limit(200);
-      mc.innerHTML = photos && photos.length
-        ? `<div class="photos-grid">${photos.map(p=>`<div class="photo-item" onclick="openLightbox('${esc(p.url)}')" ><img src="${esc(p.url)}" alt="${esc(p.caption||'')}" loading="lazy" />${p.caption?`<div class="photo-caption">${esc(p.caption)}</div>`:''}</div>`).join('')}</div>`
-        : '<div class="empty-notice">No photos yet.</div>';
-    } else if (t === 'music') {
-      const {data: tracks} = await db.from('music').select('*').eq('status','published').order('created_at',{ascending:false}).limit(48);
-      mc.innerHTML = tracks && tracks.length
-        ? `<div class="music-grid">${tracks.map(t=>`<div class="music-card">${t.cover_url?`<img class="music-cover" src="${esc(t.cover_url)}" alt="${esc(t.title)}" />`:`<div class="music-cover-ph">♪</div>`}<div class="music-info"><div class="music-title-text">${esc(t.title)}</div><div class="music-artist">${esc(t.artist)}</div><div class="music-type">${esc(t.type||'')}</div>${t.rating?`<div style="color:#f59e0b">${'★'.repeat(t.rating)}</div>`:''}</div></div>`).join('')}</div>`
-        : '<div class="empty-notice">No music yet.</div>';
-    } else if (t === 'guestbook') {
-      mc.innerHTML = await renderGuestbook({});
-    } else if (t === 'links') {
-      const {data: links} = await db.from('links').select('*').eq('visible',true).order('order').limit(200);
-      if (links && links.length) {
-        const cats = {};
-        links.forEach(l=>{const c=l.category||'misc';if(!cats[c])cats[c]=[];cats[c].push(l);});
-        mc.innerHTML = Object.entries(cats).map(([cat,ls])=>`<div class="links-category-header">${esc(cat)}</div><div class="links-list">${ls.map(l=>`<div class="link-item"><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>${l.description?`<div class="link-desc">${esc(l.description)}</div>`:''}</div>`).join('')}</div>`).join('');
-      } else { mc.innerHTML = '<div class="empty-notice">No links yet.</div>'; }
-    } else {
-      // posts (life, studies, home, etc.)
-      const {data: posts} = await db.from('posts').select('*,tab:tabs(name,slug)').eq('tab_id',tab.id).eq('published',true).neq('status','hidden').order('pinned',{ascending:false}).order('created_at',{ascending:false}).limit(20);
-      mc.innerHTML = posts && posts.length ? posts.map(p=>renderPostCard(p)).join('<div style="border-top:1px dashed var(--border);margin:8px 0 28px;"></div>') : '<div class="empty-notice">No posts yet — check back soon!</div>';
-    }
-    return;
-  }
-  document.getElementById('main-content').innerHTML = '';
-  for (const section of sections) {
-    await renderSection(section, slug);
-  }
-}
-
-function openLightbox(src) {
-  const lb = document.getElementById('lightbox');
-  const img = document.getElementById('lightbox-img');
-  if (lb && img) { img.src = src; lb.classList.add('open'); }
-}
-document.getElementById('lightbox-close')?.addEventListener('click', ()=>document.getElementById('lightbox').classList.remove('open'));
-document.getElementById('lightbox')?.addEventListener('click', e=>{ if(e.target===document.getElementById('lightbox')) document.getElementById('lightbox').classList.remove('open'); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('lightbox')?.classList.remove('open'); });
-
-document.addEventListener('DOMContentLoaded',()=>{
-  const btn = document.getElementById('theme-toggle');
-  if(btn){
-    const update = ()=>{ const cur=document.documentElement.getAttribute('data-theme'); btn.textContent=cur==='dark'?'☀ light':'☾ dark'; };
-    update();
-    btn.addEventListener('click',()=>{
-      const cur=document.documentElement.getAttribute('data-theme');
-      const next=cur==='dark'?'light':'dark';
-      document.documentElement.setAttribute('data-theme',next);
-      localStorage.setItem('theme',next);
-      update();
-    });
-  }
-});
-
-(function(){
-  var FONT2_KEY='rf2active',seq='',target='nese',active=sessionStorage.getItem(FONT2_KEY)==='1';
-  function applyFont(on){ document.documentElement.setAttribute('data-font2',on?'1':'0'); sessionStorage.setItem(FONT2_KEY,on?'1':'0'); }
-  document.addEventListener('keydown',function(e){
-    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
-    seq+=e.key.toLowerCase(); if(seq.length>target.length) seq=seq.slice(-target.length);
-    if(seq===target){ seq=''; active=!active; applyFont(active); }
+  // rebuild lbPhotos to only current album
+  const all=window._lbPhotosAll||(window._lbPhotosAll=[...window._lbPhotos]);
+  window._lbPhotos=album==='all'?all:all.filter(p=>p.album===album);
+  // update idx counts in DOM
+  let idx=0;
+  document.querySelectorAll('#gallery img').forEach(img=>{
+    if(img.style.display!=='none'){img.setAttribute('onclick',`openLBIdx(${idx})`);img.dataset.idx=idx;idx++;}
   });
-  if(active) applyFont(true);
-})();
-
+}
+document.getElementById('lightbox-close')?.addEventListener('click',()=>document.getElementById('lightbox').classList.remove('open'));
+document.getElementById('lightbox')?.addEventListener('click',e=>{if(e.target===document.getElementById('lightbox'))document.getElementById('lightbox').classList.remove('open');});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')document.getElementById('lightbox')?.classList.remove('open');
+  if(e.key==='ArrowLeft')lbNav(-1);
+  if(e.key==='ArrowRight')lbNav(1);
+});
+async function boot(){
+  document.body.classList.add('loading');
+  await buildNav('pics');
+  loadHitCounter('pics');
+  const mc=document.getElementById('page-main-content');
+  if(!mc){ document.body.classList.replace('loading','ready'); return; }
+  const {data:tab}=await db.from('tabs').select('*').eq('slug','pics').single();
+  if(!tab){
+    mc.innerHTML='<div class="empty-notice">This page isn\'t configured yet. Go to <a href="admin.html">Admin → Import Data</a> and click <strong>Import All</strong>.</div>';
+    document.body.classList.replace('loading','ready'); return;
+  }
+  await renderPageContent(tab.id, tab.page_type||'standard', 'pics', mc);
+  document.body.classList.replace('loading','ready');
+}
+document.addEventListener('DOMContentLoaded',function(){var btn=document.getElementById('theme-toggle');if(!btn)return;var upd=function(){btn.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀ light':'☾ dark';};upd();btn.addEventListener('click',function(){var next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);localStorage.setItem('theme',next);upd();});});
+(function(){var k='rf2active',seq='',tgt='nese',on=sessionStorage.getItem(k)==='1';function ap(v){document.documentElement.setAttribute('data-font2',v?'1':'0');sessionStorage.setItem(k,v?'1':'0');}document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;seq+=e.key.toLowerCase();if(seq.length>tgt.length)seq=seq.slice(-tgt.length);if(seq===tgt){seq='';on=!on;ap(on);}});if(on)ap(true);})();
 boot();
 </script>
 </body>
